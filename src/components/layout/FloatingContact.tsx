@@ -15,8 +15,7 @@ export function FloatingContact() {
         rel="noreferrer"
         data-cursor="Chat"
         aria-label="Chat on WhatsApp"
-        className="flex h-13 w-13 items-center justify-center rounded-full bg-[#25D366] text-ink shadow-[0_8px_24px_rgba(37,211,102,0.4)] transition-transform hover:scale-110"
-        style={{ height: 52, width: 52 }}
+        className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#25D366] text-ink shadow-[0_8px_24px_rgba(37,211,102,0.4)] transition-transform hover:scale-110"
       >
         <FaWhatsapp size={22} />
       </a>
@@ -24,8 +23,7 @@ export function FloatingContact() {
         href="tel:+917018595304"
         data-cursor="Call"
         aria-label="Call now"
-        className="flex items-center justify-center rounded-full border border-gold/40 bg-ink/80 text-gold backdrop-blur transition-transform hover:scale-110"
-        style={{ height: 52, width: 52 }}
+        className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-gold/40 bg-ink/80 text-gold backdrop-blur transition-transform hover:scale-110"
       >
         <FaPhoneAlt size={16} />
       </a>

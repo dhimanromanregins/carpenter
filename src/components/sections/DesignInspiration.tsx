@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { MagneticButton } from "@/components/ui/MagneticButton";
 import { InspirationGrid } from "./InspirationGrid";
 import { WARDROBE_INSPIRATION } from "@/data/wardrobeInspiration";
 import { KITCHEN_INSPIRATION } from "@/data/kitchenInspiration";
@@ -41,12 +42,24 @@ export function DesignInspiration() {
   return (
     <section id="inspiration" className="relative bg-ink py-28 md:py-40">
       <div className="container-luxury">
-        <div className="mb-12">
+        <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
           <SectionHeading
             eyebrow="Inspiration"
             title="Our Projects, Your Ideas"
             description="Curated reference images to help you explore styles before we design your own space."
           />
+          {activeGroup === "kitchen" && (
+            <div className="hidden md:block">
+              <MagneticButton
+                variant="outline"
+                onClick={() => {
+                  window.location.href = "/kitchen-studio.html";
+                }}
+              >
+                Design Your Kitchen →
+              </MagneticButton>
+            </div>
+          )}
         </div>
 
         <div className="mb-10 flex flex-wrap gap-3">

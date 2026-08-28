@@ -1,17 +1,22 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { label: "Home", href: "#hero" },
-  { label: "Projects", href: "#projects" },
-  { label: "Inspiration", href: "#inspiration" },
-  { label: "Services", href: "#services" },
-  { label: "Materials", href: "#materials" },
-  { label: "About", href: "#about" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "#hero", isExternal: false },
+  { label: "Projects", href: "#projects", isExternal: false },
+  { label: "Inspiration", href: "#inspiration", isExternal: false },
+  { label: "Services", href: "#services", isExternal: false },
+  { label: "About", href: "#about", isExternal: false },
+  {
+    label: "Kitchen Studio",
+    href: "/kitchen-studio.html",
+    isExternal: true,
+    hideOnMobile: true,
+  },
+  { label: "Contact", href: "#contact", isExternal: false },
 ];
 
 export function Navbar() {
@@ -19,6 +24,8 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const { scrollY } = useScroll();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 40);
@@ -26,6 +33,10 @@ export function Navbar() {
 
   const handleNav = (href: string) => {
     setMenuOpen(false);
+    if (location.pathname !== "/") {
+      navigate("/" + href);
+      return;
+    }
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -60,10 +71,14 @@ export function Navbar() {
                   href={link.href}
                   onMouseEnter={() => setHovered(link.href)}
                   onMouseLeave={() => setHovered(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNav(link.href);
-                  }}
+                  onClick={
+                    link.isExternal
+                      ? () => setMenuOpen(false)
+                      : (e) => {
+                          e.preventDefault();
+                          handleNav(link.href);
+                        }
+                  }
                   className="relative text-xs uppercase tracking-[0.2em] text-cream/80 transition-colors hover:text-cream"
                 >
                   {link.label}
@@ -126,11 +141,18 @@ export function Navbar() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNav(link.href);
-                }}
-                className="font-display text-3xl text-cream"
+                onClick={
+                  link.isExternal
+                    ? () => setMenuOpen(false)
+                    : (e) => {
+                        e.preventDefault();
+                        handleNav(link.href);
+                      }
+                }
+                className={cn(
+                  "font-display text-3xl text-cream",
+                  link.hideOnMobile && "hidden md:block"
+                )}
               >
                 {link.label}
               </motion.a>

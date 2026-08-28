@@ -46,11 +46,7 @@ export function Materials() {
           ))}
         </div>
 
-        <RevealOnScroll delay={0.3}>
-          <p className="mt-10 text-center text-xs uppercase tracking-[0.2em] text-gold/80">
-            No low-quality boards. Ever.
-          </p>
-        </RevealOnScroll>
+        
       </div>
     </section>
   );

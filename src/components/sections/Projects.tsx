@@ -6,7 +6,7 @@ import { ProjectModal } from "@/components/sections/ProjectModal";
 import { cn } from "@/lib/utils";
 
 const SIZE_CLASSES: Record<string, string> = {
-  tall: "row-span-2 aspect-[3/4]",
+  tall: "sm:row-span-2 aspect-[3/4]",
   wide: "sm:col-span-2 aspect-[16/10]",
   square: "aspect-square",
 };
@@ -35,7 +35,7 @@ export function Projects() {
                 onClick={() => setActive(cat)}
                 data-cursor={cat === active ? "" : "View"}
                 className={cn(
-                  "rounded-full border px-5 py-2 text-xs uppercase tracking-widest transition-colors duration-300",
+                  "rounded-full border px-5 py-2.5 text-xs uppercase tracking-widest transition-colors duration-300",
                   active === cat
                     ? "border-gold bg-gold text-ink"
                     : "border-gold/25 text-grey hover:border-gold/60 hover:text-cream"
@@ -110,7 +110,7 @@ export function Projects() {
                   {!project.sample && <p className="mt-1 text-xs text-grey">{project.year}</p>}
                 </div>
 
-                <div className="absolute right-5 top-5 flex h-10 w-10 -translate-y-3 items-center justify-center rounded-full border border-gold/40 text-gold opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 text-gold opacity-60 transition-all duration-500 sm:-translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
                   &#8599;
                 </div>
               </motion.div>

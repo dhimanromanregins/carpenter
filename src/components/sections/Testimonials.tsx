@@ -56,17 +56,21 @@ export function Testimonials() {
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-8 flex items-center justify-center gap-3">
+          <div className="mt-8 flex items-center justify-center gap-1">
             {TESTIMONIALS.map((t, i) => (
               <button
                 key={t.id}
                 onClick={() => setIndex(i)}
                 aria-label={`Testimonial ${i + 1}`}
-                className={cn(
-                  "h-1.5 rounded-full transition-all duration-500",
-                  i === index ? "w-8 bg-gold" : "w-1.5 bg-grey/40"
-                )}
-              />
+                className="flex h-10 w-10 items-center justify-center"
+              >
+                <span
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-500",
+                    i === index ? "w-8 bg-gold" : "w-1.5 bg-grey/40"
+                  )}
+                />
+              </button>
             ))}
           </div>
         </div>

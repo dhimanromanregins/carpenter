@@ -90,7 +90,7 @@ export function RoomShowcase() {
                   data-cursor={f.label}
                   aria-label={f.label}
                   className={cn(
-                    "h-9 w-9 rounded-full border-2 transition-transform duration-300",
+                    "h-10 w-10 rounded-full border-2 transition-transform duration-300",
                     finishId === f.id
                       ? "scale-110 border-gold"
                       : "border-cream/30 hover:scale-105"

@@ -31,14 +31,14 @@ export function About() {
             description="For over a decade, Dhiman Interiors has been shaping homes across North India with handcrafted carpentry — where every panel, joint and finish is considered, not mass-produced."
           />
 
-          <div className="grid grid-cols-3 gap-6 border-y border-gold/10 py-8">
+          <div className="grid grid-cols-3 gap-4 border-y border-gold/10 py-8 sm:gap-6">
             {STATS.map((stat) => (
               <RevealOnScroll key={stat.label}>
                 <div>
                   <p className="font-display text-3xl text-gold sm:text-4xl">
                     <Counter to={stat.value} suffix={stat.suffix} />
                   </p>
-                  <p className="mt-1 text-xs uppercase tracking-widest text-grey">
+                  <p className="mt-1 text-[10px] uppercase tracking-widest text-grey sm:text-xs">
                     {stat.label}
                   </p>
                 </div>
@@ -54,7 +54,7 @@ export function About() {
                     {item.year}
                   </span>
                   <span className="h-px flex-1 bg-gold/15" />
-                  <span className="max-w-[60%] text-right text-sm text-grey md:text-base">
+                  <span className="max-w-[70%] text-right text-sm text-grey sm:max-w-[60%] md:text-base">
                     {item.label}
                   </span>
                 </div>
