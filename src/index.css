@@ -49,18 +49,6 @@
     @apply font-display font-normal tracking-tight;
   }
 
-  a,
-  button {
-    @apply cursor-none;
-  }
-
-  @media (max-width: 768px), (pointer: coarse) {
-    a,
-    button {
-      cursor: pointer;
-    }
-  }
-
   ::-webkit-scrollbar {
     width: 6px;
   }

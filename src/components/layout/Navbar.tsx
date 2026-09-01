@@ -5,18 +5,18 @@ import { MagneticButton } from "@/components/ui/MagneticButton";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
-  { label: "Home", href: "#hero", isExternal: false },
-  { label: "Projects", href: "#projects", isExternal: false },
-  { label: "Inspiration", href: "#inspiration", isExternal: false },
-  { label: "Services", href: "#services", isExternal: false },
-  { label: "About", href: "#about", isExternal: false },
+  { label: "Home", href: "#hero", isExternal: false, isRoute: false },
+  { label: "Projects", href: "#projects", isExternal: false, isRoute: false },
+  { label: "Services", href: "#services", isExternal: false, isRoute: false },
+  { label: "About", href: "#about", isExternal: false, isRoute: false },
   {
-    label: "Kitchen Studio",
-    href: "/kitchen-studio.html",
+    label: "Design Studio",
+    href: "/design-studio",
     isExternal: true,
+    isRoute: false,
     hideOnMobile: true,
   },
-  { label: "Contact", href: "#contact", isExternal: false },
+  { label: "Contact", href: "#contact", isExternal: false, isRoute: false },
 ];
 
 export function Navbar() {
@@ -72,7 +72,13 @@ export function Navbar() {
                   onMouseEnter={() => setHovered(link.href)}
                   onMouseLeave={() => setHovered(null)}
                   onClick={
-                    link.isExternal
+                    link.isRoute
+                      ? (e) => {
+                          e.preventDefault();
+                          setMenuOpen(false);
+                          navigate(link.href);
+                        }
+                      : link.isExternal
                       ? () => setMenuOpen(false)
                       : (e) => {
                           e.preventDefault();
@@ -142,7 +148,13 @@ export function Navbar() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
                 onClick={
-                  link.isExternal
+                  link.isRoute
+                    ? (e) => {
+                        e.preventDefault();
+                        setMenuOpen(false);
+                        navigate(link.href);
+                      }
+                    : link.isExternal
                     ? () => setMenuOpen(false)
                     : (e) => {
                         e.preventDefault();

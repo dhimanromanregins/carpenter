@@ -7,7 +7,6 @@ import { About } from "@/components/sections/About";
 import { Services } from "@/components/sections/Services";
 import { Materials } from "@/components/sections/Materials";
 import { Projects } from "@/components/sections/Projects";
-import { DesignInspiration } from "@/components/sections/DesignInspiration";
 import { RoomShowcase } from "@/components/sections/RoomShowcase";
 import { WhyChooseUs } from "@/components/sections/WhyChooseUs";
 import { Testimonials } from "@/components/sections/Testimonials";
@@ -34,16 +33,15 @@ export function HomePage() {
     <>
       <main className="relative">
         <Hero />
-        <CinematicScroll />
         <About />
         <Services />
         <Materials />
         <Projects />
-        <DesignInspiration />
         <RoomShowcase />
         <WhyChooseUs />
         <Testimonials />
         <Contact />
+        <CinematicScroll />
       </main>
 
       <Footer />

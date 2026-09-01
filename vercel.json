@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/design-studio/kitchen", "destination": "/design-studio-kitchen.html" },
+    { "source": "/design-studio/wardrobe", "destination": "/design-studio-wardrobe.html" }
+  ]
+}

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wardrobe Designer — Design Studio</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --panel: #FFFFFF;
+    --ink: #2A2620;
+    --sub: #7A7468;
+    --line: #E4DFD3;
+    --accent: #B5714A;
+    --accent-dark: #8C5333;
+    --danger: #B5453D;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #app { display: flex; width: 100vw; height: 100vh; }
+
+  /* ---------- Phone block ---------- */
+  #mobile-block { display: none; }
+  @media (max-width: 767px) {
+    #app { display: none; }
+    #mobile-block {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; min-height: 100vh; padding: 40px 28px; text-align: center;
+      background: var(--bg); color: var(--ink);
+    }
+    #mobile-block h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    #mobile-block p { font-size: 14px; color: var(--sub); line-height: 1.6; margin: 0; max-width: 320px; }
+    #mobile-block a {
+      margin-top: 8px; padding: 11px 22px; border-radius: 999px;
+      background: var(--accent-dark); color: #fff; text-decoration: none;
+      font-size: 13px; font-weight: 600;
+    }
+  }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar {
+    width: 340px; min-width: 340px;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    height: 100%;
+  }
+  #sidebar-header { padding: 20px 20px 14px; border-bottom: 1px solid var(--line); }
+  #sidebar-header h1 { font-size: 17px; font-weight: 700; margin: 0 0 2px; letter-spacing: -0.01em; }
+  #sidebar-header p { font-size: 12.5px; color: var(--sub); margin: 0; }
+  #sidebar-scroll { flex: 1; overflow-y: auto; padding: 16px 20px 28px; }
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--sub); margin: 20px 0 10px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  #wall-panel { background: #FBF7F1; border: 1px solid #EAD8C8; border-radius: 12px; padding: 14px; }
+  .dim-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .dim-field { flex: 1; }
+  .dim-field label { display: block; font-size: 11px; color: var(--sub); margin-bottom: 4px; font-weight: 600; }
+  .dim-field .unit-input { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .dim-field input[type="number"] {
+    width: 100%; border: none; background: transparent; padding: 8px 4px 8px 10px;
+    font-size: 13.5px; font-family: inherit; color: var(--ink); outline: none;
+  }
+  .dim-field .unit-input span { font-size: 11.5px; color: var(--sub); padding-right: 10px; }
+
+  .total-width-label { font-weight: 700; color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 11px; }
+  #sections-list { display: flex; flex-direction: column; gap: 10px; }
+  .sec-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .sec-row1 { display: flex; align-items: center; gap: 6px; }
+  .sec-type {
+    flex: 1; border: 1px solid var(--line); border-radius: 7px; background: #FBFAF7;
+    font-size: 12px; font-family: inherit; color: var(--ink); padding: 7px 6px; cursor: pointer;
+  }
+  .sec-width { width: 92px; flex-shrink: 0; }
+  .sec-width input[type="number"] { padding: 7px 2px 7px 8px; font-size: 12.5px; }
+  .sec-del {
+    width: 28px; height: 28px; border-radius: 7px; border: none; background: transparent;
+    color: var(--sub); cursor: pointer; font-size: 14px; flex-shrink: 0;
+  }
+  .sec-del:hover { background: #F3E3E1; color: var(--danger); }
+  .sec-sub { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .sec-doorstyle { display: flex; gap: 6px; }
+  .sec-doorstyle button {
+    flex: 1; padding: 6px 4px; border: 1.5px solid var(--line); border-radius: 7px;
+    background: #FBFAF7; cursor: pointer; font-size: 11.5px; font-weight: 600; color: var(--ink);
+  }
+  .sec-doorstyle button.active { border-color: var(--accent-dark); background: #FBF3EC; }
+  #add-section-btn {
+    width: 100%; margin-top: 10px; padding: 10px; border: 1.5px dashed var(--line); border-radius: 9px;
+    background: #FBFAF7; color: var(--accent-dark); font-size: 12.5px; font-weight: 700; cursor: pointer;
+  }
+  #add-section-btn:hover { border-color: var(--accent); background: #FBF3EC; }
+  #loft-panel { background: #FBF7F1; border: 1px solid #EAD8C8; border-radius: 12px; padding: 14px; }
+  .loft-check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .loft-check input { width: 16px; height: 16px; }
+
+  .stepper-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  }
+  .stepper-row .stepper-label { font-size: 12.5px; font-weight: 600; }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper-btn {
+    width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--line);
+    background: #FBFAF7; color: var(--ink); font-size: 15px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .stepper-btn:hover { border-color: var(--accent); background: #FBF3EC; }
+  .stepper-count { min-width: 18px; text-align: center; font-size: 13.5px; font-weight: 700; }
+
+  .swatch-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .preset-swatch {
+    width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0;
+  }
+  .preset-swatch:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .finish-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .finish-row .finish-label { font-size: 12.5px; font-weight: 600; width: 78px; flex-shrink: 0; }
+  .finish-row input[type="color"] {
+    width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 6px;
+    padding: 1px; background: #fff; cursor: pointer; flex-shrink: 0;
+  }
+
+  #hint {
+    margin-top: 18px; font-size: 12px; color: var(--sub);
+    background: #FBF3EC; border: 1px solid #EAD8C8; border-radius: 8px;
+    padding: 10px 12px; line-height: 1.5;
+  }
+
+  /* ---------- Viewport ---------- */
+  #viewport-wrap { flex: 1; position: relative; }
+  #canvas-holder { width: 100%; height: 100%; }
+  #canvas-holder canvas { display: block; }
+
+  #top-bar {
+    position: absolute; top: 16px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    pointer-events: none;
+  }
+  .top-btn-group { display: flex; gap: 6px; pointer-events: auto; }
+  .top-btn {
+    background: rgba(255,255,255,0.92); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); cursor: pointer; backdrop-filter: blur(4px);
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+  .top-btn:hover { border-color: var(--accent); }
+  .top-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  #loading-veil {
+    position: absolute; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--sub); z-index: 5;
+    transition: opacity .3s;
+  }
+</style>
+</head>
+<body>
+
+<div id="mobile-block">
+  <h1>Wardrobe Designer</h1>
+  <p>This interactive 3D designer needs a bigger screen. Please switch to a tablet or larger device to design your wardrobe.</p>
+  <a href="/">&larr; Back to home</a>
+</div>
+
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h1>Wardrobe designer</h1>
+      <p>Build your wardrobe from sections — doors, drawers or open shelving — at any width you need.</p>
+    </div>
+    <div id="sidebar-scroll">
+
+      <div class="section-title">Height</div>
+      <div id="wall-panel">
+        <div class="dim-field">
+          <label>Wall height</label>
+          <div class="unit-input"><input type="number" id="wall-height" value="2.4" min="2" max="2.7" step="0.05"><span>m</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">Sections <span id="total-width-label" class="total-width-label"></span></div>
+      <div id="sections-list"></div>
+      <button id="add-section-btn">+ Add section</button>
+
+      <div class="section-title" style="margin-top:24px;">Cabinets above</div>
+      <div id="loft-panel">
+        <label class="loft-check"><input type="checkbox" id="loft-enable" /> Add cabinets above the wardrobe</label>
+        <div class="dim-field" id="loft-height-row" style="display:none; margin-top:10px;">
+          <label>Loft height</label>
+          <div class="unit-input"><input type="number" id="loft-height" value="0.5" min="0.35" max="0.9" step="0.05"><span>m</span></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:24px;">Finish</div>
+      <div class="finish-row">
+        <span class="finish-label">Cabinet</span>
+        <input type="color" id="global-cabinet-color" value="#D9C7A8" />
+        <div class="swatch-row" id="swatches-cabinet"></div>
+      </div>
+      <div class="finish-row">
+        <span class="finish-label">Handles</span>
+        <input type="color" id="global-hardware-color" value="#B08D57" />
+        <div class="swatch-row" id="swatches-hardware"></div>
+      </div>
+
+      <div id="hint">Tip: drag to orbit, scroll to zoom, right-drag to pan. Click a door to open or slide it, click a drawer to open it.</div>
+    </div>
+  </div>
+
+  <div id="viewport-wrap">
+    <div id="canvas-holder"></div>
+    <div id="loading-veil">Setting up the wardrobe…</div>
+    <div id="top-bar">
+      <div class="top-btn-group">
+        <a class="top-btn" href="/design-studio">&larr; Design Studio</a>
+        <button class="top-btn active" data-view="perspective">Perspective</button>
+        <button class="top-btn" data-view="top">Top view</button>
+        <button class="top-btn" data-view="front">Front view</button>
+      </div>
+      <div class="top-btn-group">
+        <button class="top-btn" id="snapshot-btn">Save photo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'undefined') {
+    document.write('<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+  }
+</script>
+<script>
+(function(){
+
+  // =================================================================
+  // Color + texture helpers
+  // =================================================================
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var num = parseInt(hex, 16);
+    return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(function(v){ return clamp(Math.round(v),0,255).toString(16).padStart(2,'0'); }).join('');
+  }
+  function shadeColor(hex, percent){
+    var c = hexToRgb(hex);
+    var amt = percent/100;
+    var r = amt >= 0 ? c.r + (255-c.r)*amt : c.r*(1+amt);
+    var g = amt >= 0 ? c.g + (255-c.g)*amt : c.g*(1+amt);
+    var b = amt >= 0 ? c.b + (255-c.b)*amt : c.b*(1+amt);
+    return rgbToHex(r,g,b);
+  }
+  function makeCanvasTexture(draw, size){
+    var c = document.createElement('canvas');
+    c.width = c.height = size || 256;
+    var ctx = c.getContext('2d');
+    draw(ctx, c.width, c.height);
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 4;
+    return tex;
+  }
+  function woodTexture(hex, vertical){
+    return makeCanvasTexture(function(ctx,w,h){
+      ctx.fillStyle = hex; ctx.fillRect(0,0,w,h);
+      for (var i=0;i<46;i++){
+        var pos = Math.random()*(vertical?w:h);
+        ctx.strokeStyle = shadeColor(hex, (Math.random()>0.55?1:-1)*(6+Math.random()*12));
+        ctx.globalAlpha = 0.12 + Math.random()*0.18;
+        ctx.lineWidth = 0.5 + Math.random()*1.6;
+        ctx.beginPath();
+        if (vertical){
+          ctx.moveTo(pos,0);
+          for (var y=0;y<=h;y+=14){ pos += (Math.random()-0.5)*5; ctx.lineTo(pos,y); }
+        } else {
+          ctx.moveTo(0,pos);
+          for (var x=0;x<=w;x+=14){ pos += (Math.random()-0.5)*5; ctx.lineTo(x,pos); }
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }, 256);
+  }
+  function floorTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      var rows = 7, plankH = h/rows;
+      for (var r=0;r<rows;r++){
+        var shade = shadeColor(hex, (Math.random()-0.5)*16);
+        ctx.fillStyle = shade;
+        ctx.fillRect(0, r*plankH, w, plankH);
+        for (var i=0;i<10;i++){
+          ctx.strokeStyle = shadeColor(shade, (Math.random()>0.5?1:-1)*10);
+          ctx.globalAlpha = 0.18;
+          ctx.lineWidth = 0.6;
+          var y0 = r*plankH + Math.random()*plankH;
+          ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(w, y0+(Math.random()-0.5)*6); ctx.stroke();
+        }
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = 'rgba(20,14,8,0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0,r*plankH); ctx.lineTo(w,r*plankH); ctx.stroke();
+        var seam = 40 + Math.random()*80;
+        ctx.beginPath(); ctx.moveTo(seam, r*plankH); ctx.lineTo(seam, (r+1)*plankH); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }, 256);
+  }
+
+  // =================================================================
+  // State
+  // =================================================================
+  // width is derived from SECTIONS (see recomputeWallWidth) — height is the
+  // one dimension the user sets directly.
+  var WALL = { width: 2.6, height: 2.4 };
+  var DEPTH = 0.6;
+  var WALL_Z = -1.3;
+  var FLOOR_DEPTH = 2.8;
+  var globals = { cabinet: '#D9C7A8', hardware: '#B08D57' };
+
+  var MAX_SECTIONS = 6;
+  var nextSectionId = 3;
+  var SECTIONS = [
+    { id: 1, type: 'doors', width: 2.05, doorStyle: 'hinged', shelves: 4 },
+    { id: 2, type: 'drawers', width: 0.55, count: 2 }
+  ];
+  var LOFT = { enabled: false, height: 0.5 };
+
+  function recomputeWallWidth(){
+    WALL.width = SECTIONS.reduce(function(sum, s){ return sum + s.width; }, 0) || 0.6;
+  }
+  function totalHeight(){
+    return WALL.height + (LOFT.enabled ? LOFT.height + 0.03 : 0);
+  }
+
+  var PALETTES = {
+    cabinet:  ['#EDEAE2','#F7F5F0','#C9A66B','#8A9A82','#3B3F42','#2E4057','#6B4A34'],
+    hardware: ['#D8DADC','#B08D57','#2A2A2A','#8C8F92']
+  };
+
+  // =================================================================
+  // Scene setup
+  // =================================================================
+  var holder = document.getElementById('canvas-holder');
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xEFEAE0);
+  scene.fog = new THREE.Fog(0xEFEAE0, 12, 26);
+
+  var camera = new THREE.PerspectiveCamera(42, holder.clientWidth/holder.clientHeight, 0.1, 100);
+  var VIEWS = {
+    perspective: { pos: [3.2, 2.0, 3.6], target: [0, 1.1, WALL_Z+0.3] },
+    top:         { pos: [0.01, 8, WALL_Z+0.5], target: [0, 0, WALL_Z+0.5] },
+    front:       { pos: [0, 1.4, 5.5], target: [0, 1.1, WALL_Z+0.3] }
+  };
+  camera.position.set.apply(camera.position, VIEWS.perspective.pos);
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(holder.clientWidth, holder.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  holder.appendChild(renderer.domElement);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set.apply(controls.target, VIEWS.perspective.target);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 1.0;
+  controls.maxDistance = 14;
+  controls.maxPolarAngle = Math.PI/2 - 0.02;
+  controls.update();
+
+  // ---------------- Lighting ----------------
+  scene.add(new THREE.AmbientLight(0xffffff, 0.24));
+  var hemi = new THREE.HemisphereLight(0xE9EDF5, 0xC7BFA9, 0.6);
+  scene.add(hemi);
+
+  var key = new THREE.DirectionalLight(0xfff2df, 1.2);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.bias = -0.0015;
+  key.shadow.radius = 3;
+  scene.add(key);
+  scene.add(key.target);
+
+  function updateShadowFrustum(){
+    var th = totalHeight();
+    var half = Math.max(WALL.width, th) / 2 + 1.5;
+    key.shadow.camera.left = -half; key.shadow.camera.right = half;
+    key.shadow.camera.top = half; key.shadow.camera.bottom = -half;
+    key.shadow.camera.far = half * 3 + 6;
+    key.shadow.camera.updateProjectionMatrix();
+    key.position.set(-half*0.7 , half*0.9 + 2.5, WALL_Z + half*0.9 + 1);
+    key.target.position.set(0, th/2, WALL_Z+0.3);
+    key.target.updateMatrixWorld();
+  }
+
+  var fillLight = new THREE.DirectionalLight(0xdce6ff, 0.3);
+  fillLight.position.set(3, 2.5, 1.5);
+  scene.add(fillLight);
+
+  var rim = new THREE.PointLight(0xfff6e8, 0.35, 10);
+  rim.position.set(0, 2, WALL_Z + 1.6);
+  scene.add(rim);
+
+  // =================================================================
+  // Backdrop — floor + single back wall (rebuildable)
+  // =================================================================
+  var floorMat = new THREE.MeshStandardMaterial({ color: '#8A6A47', roughness: 0.55, metalness: 0.02, map: floorTexture('#8A6A47') });
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(1,1), floorMat);
+  floor.rotation.x = -Math.PI/2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  var wallMat = new THREE.MeshStandardMaterial({ color: '#EDE8DC', roughness: 0.92, side: THREE.DoubleSide });
+  var backWall = new THREE.Mesh(new THREE.PlaneGeometry(1,1), wallMat);
+  backWall.receiveShadow = true;
+  scene.add(backWall);
+
+  var baseboardMat = new THREE.MeshStandardMaterial({ color: 0xF7F5F0, roughness: 0.6 });
+  var bb = new THREE.Mesh(new THREE.BoxGeometry(1,0.09,0.03), baseboardMat);
+  scene.add(bb);
+
+  function rebuildBackdrop(){
+    var floorWidth = Math.max(WALL.width+1.6, 3);
+    var wallHeight = totalHeight()+0.6;
+
+    floor.geometry.dispose();
+    floor.geometry = new THREE.PlaneGeometry(floorWidth, FLOOR_DEPTH);
+    floor.position.set(0, 0, WALL_Z + FLOOR_DEPTH/2);
+    floorMat.map.repeat.set(Math.max(2, floorWidth/1.3), Math.max(2, FLOOR_DEPTH/1.3));
+    floorMat.needsUpdate = true;
+
+    backWall.geometry.dispose();
+    backWall.geometry = new THREE.PlaneGeometry(floorWidth, wallHeight);
+    backWall.position.set(0, wallHeight/2, WALL_Z);
+
+    bb.geometry.dispose();
+    bb.geometry = new THREE.BoxGeometry(floorWidth, 0.09, 0.03);
+    bb.position.set(0, 0.045, WALL_Z+0.015);
+
+    updateShadowFrustum();
+  }
+
+  function fitCameraToWardrobe(){
+    var w = WALL.width, h = totalHeight();
+    var diag = Math.sqrt(w*w + h*h);
+    var dist = Math.max(w, h*1.3)*0.95 + 2.2;
+    var frontZ = WALL_Z + DEPTH + 0.05;
+    VIEWS.perspective = { pos: [dist*0.5, h*0.5+0.3, frontZ+dist*0.85], target: [0, h*0.45, frontZ] };
+    VIEWS.top = { pos: [0.01, diag*1.7+3, WALL_Z+0.6], target: [0, 0, WALL_Z+0.6] };
+    VIEWS.front = { pos: [0, h*0.5, frontZ+dist*1.15], target: [0, h*0.45, frontZ] };
+    controls.maxDistance = diag*2.4 + 9;
+    camera.position.set.apply(camera.position, VIEWS.perspective.pos);
+    controls.target.set.apply(controls.target, VIEWS.perspective.target);
+    controls.update();
+    document.querySelectorAll('.top-btn[data-view]').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelector('.top-btn[data-view="perspective"]').classList.add('active');
+  }
+
+  // =================================================================
+  // Shared materials
+  // =================================================================
+  var sharedCabinetMat = new THREE.MeshStandardMaterial({ color: globals.cabinet, roughness: 0.6, metalness: 0.04, map: woodTexture(globals.cabinet, true) });
+  var sharedHandleMat = new THREE.MeshStandardMaterial({ color: globals.hardware, roughness: 0.3, metalness: 0.9 });
+  var sharedInteriorMat = new THREE.MeshStandardMaterial({ color: '#F5F2EA', roughness: 0.7, metalness: 0.02 });
+  var sharedRackMat = new THREE.MeshStandardMaterial({ color: shadeColor('#F5F2EA', -18), roughness: 0.5, metalness: 0.08 });
+  var darkTrimMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.35, metalness: 0.4 });
+
+  function updateCabinetMat(hex){
+    globals.cabinet = hex;
+    sharedCabinetMat.color.set(hex);
+    sharedCabinetMat.map = woodTexture(hex, true);
+    sharedCabinetMat.needsUpdate = true;
+  }
+  function updateHandleMat(hex){ globals.hardware = hex; sharedHandleMat.color.set(hex); }
+
+  // =================================================================
+  // Helpers
+  // =================================================================
+  function addMesh(group, geo, mat, x,y,z, castShadow){
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x,y,z);
+    mesh.castShadow = castShadow !== false;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return mesh;
+  }
+
+  // Interior cavity: back/side/bottom panels + evenly-spaced shelves.
+  function addWardrobeInterior(g, opts){
+    var mat = sharedInteriorMat;
+    var backZ = opts.frontZ - opts.depth;
+    var midZ = backZ + opts.depth/2;
+    var x0 = opts.centerX - opts.width/2, x1 = opts.centerX + opts.width/2;
+    addMesh(g, new THREE.BoxGeometry(opts.width, opts.height, 0.02), mat, opts.centerX, opts.centerY, backZ+0.01, false);
+    addMesh(g, new THREE.BoxGeometry(0.02, opts.height, opts.depth), mat, x0, opts.centerY, midZ, false);
+    addMesh(g, new THREE.BoxGeometry(0.02, opts.height, opts.depth), mat, x1, opts.centerY, midZ, false);
+    addMesh(g, new THREE.BoxGeometry(opts.width, 0.02, opts.depth), mat, opts.centerX, opts.centerY-opts.height/2, midZ, false);
+    var shelfCount = opts.shelves || 0;
+    for (var i=1;i<=shelfCount;i++){
+      var sy = opts.centerY - opts.height/2 + (opts.height/(shelfCount+1))*i;
+      // A plain plank the same tone as the cavity walls all but disappears
+      // when viewed near-edge-on from the front — a contrasting front-edge
+      // trim in the hardware color is what actually reads as "a shelf".
+      addMesh(g, new THREE.BoxGeometry(opts.width-0.03, 0.024, opts.depth-0.03), sharedRackMat, opts.centerX, sy, midZ);
+      addMesh(g, new THREE.BoxGeometry(opts.width-0.03, 0.026, 0.016), sharedHandleMat, opts.centerX, sy+0.012, opts.frontZ-0.01, false);
+    }
+  }
+
+  // Generalized open/close tween — 'rotate' animates rotation[axis] (hinged
+  // doors), 'slide' animates position[axis] (sliding doors and drawers).
+  var interactiveTweens = [];
+  function toggleInteractive(obj){
+    var d = obj.userData;
+    d.isOpen = !d.isOpen;
+    var current = d.mode === 'rotate' ? obj.rotation[d.axis] : obj.position[d.axis];
+    var to = d.isOpen ? d.openValue : d.closedValue;
+    interactiveTweens = interactiveTweens.filter(function(t){ return t.obj !== obj; });
+    interactiveTweens.push({ obj: obj, mode: d.mode, axis: d.axis, from: current, to: to, start: performance.now(), duration: 420 });
+  }
+
+  // Hinged door leaf: pivot group at the hinge line; the door panel is offset
+  // from the pivot so rotating the pivot swings the door about its edge.
+  function addHingedLeaf(parentGroup, opts){
+    var pivot = new THREE.Group();
+    pivot.position.set(opts.hingeX, opts.hingeY, opts.hingeZ);
+    var doorMesh = new THREE.Mesh(new THREE.BoxGeometry(opts.width, opts.height, 0.02), opts.mat);
+    doorMesh.position.set(opts.offsetX||0, 0, 0);
+    doorMesh.castShadow = true; doorMesh.receiveShadow = true;
+    pivot.add(doorMesh);
+    if (opts.handle){
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(0.025,0.22,0.025), sharedHandleMat);
+      handle.position.set(opts.handle.x, opts.handle.y, opts.handle.z);
+      doorMesh.add(handle);
+    }
+    pivot.userData.mode = 'rotate';
+    pivot.userData.axis = 'y';
+    pivot.userData.closedValue = 0;
+    pivot.userData.openValue = opts.openAngle;
+    pivot.userData.isOpen = false;
+    parentGroup.add(pivot);
+    return pivot;
+  }
+
+  function buildHingedDoors(g, zoneX0, zoneWidth, frontZ, centerY, doorHeight){
+    var leafCount = clamp(Math.round(zoneWidth/0.6), 1, 6);
+    var leafWidth = zoneWidth/leafCount;
+    for (var i=0;i<leafCount;i++){
+      var lx0 = zoneX0 + i*leafWidth, lx1 = lx0 + leafWidth;
+      var hingeOnLeft = i < leafCount/2;
+      var panelW = leafWidth - 0.015;
+      var hingeX = hingeOnLeft ? lx0 : lx1;
+      var offsetX = hingeOnLeft ? panelW/2 : -panelW/2;
+      var handleX = hingeOnLeft ? (panelW/2-0.06) : -(panelW/2-0.06);
+      addHingedLeaf(g, {
+        hingeX: hingeX, hingeY: centerY, hingeZ: frontZ+0.012,
+        width: panelW, height: doorHeight, offsetX: offsetX, mat: sharedCabinetMat,
+        openAngle: hingeOnLeft ? -1.7 : 1.7,
+        handle: { x: handleX, y: 0, z: 0.02 }
+      });
+    }
+  }
+
+  function buildSlidingPanel(opts){
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(opts.width, opts.height, 0.02), opts.mat);
+    mesh.position.set(opts.homeX, opts.y, opts.z);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.22,0.02), sharedHandleMat);
+    handle.position.set(opts.handleSide*(opts.width/2-0.06), 0, 0.02);
+    mesh.add(handle);
+    mesh.userData.mode = 'slide';
+    mesh.userData.axis = 'x';
+    mesh.userData.closedValue = opts.homeX;
+    mesh.userData.openValue = opts.openX;
+    mesh.userData.isOpen = false;
+    return mesh;
+  }
+
+  function buildSlidingDoors(g, zoneX0, zoneWidth, frontZ, doorHeight, centerY){
+    var panelW = zoneWidth * 0.58;
+    var travel = zoneWidth - panelW;
+    var leftHomeX = zoneX0 + panelW/2;
+    var rightHomeX = zoneX0 + zoneWidth - panelW/2;
+    // Both panels must sit proud of the carcass body's own front face (frontZ)
+    // — a panel recessed behind it would be occluded by the solid body box,
+    // both visually and for click raycasting.
+    var leftPanel = buildSlidingPanel({ homeX: leftHomeX, openX: leftHomeX+travel, y: centerY, z: frontZ+0.010, width: panelW, height: doorHeight, mat: sharedCabinetMat, handleSide: 1 });
+    var rightPanel = buildSlidingPanel({ homeX: rightHomeX, openX: rightHomeX-travel, y: centerY, z: frontZ+0.024, width: panelW, height: doorHeight, mat: sharedCabinetMat, handleSide: -1 });
+    g.add(leftPanel); g.add(rightPanel);
+  }
+
+  function buildDrawers(g, zoneX0, zoneWidth, frontZ, height, count, depth){
+    var unitH = height/count;
+    for (var i=0;i<count;i++){
+      var cy = unitH*i + unitH/2;
+      var grp = new THREE.Group();
+      var front = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth-0.03, unitH-0.02, 0.02), sharedCabinetMat);
+      front.castShadow = true; front.receiveShadow = true;
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth*0.4,0.02,0.02), sharedHandleMat);
+      handle.position.set(0, unitH*0.26, 0.02);
+      front.add(handle);
+      var box = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth-0.08, unitH*0.7, depth*0.8), sharedInteriorMat);
+      box.position.set(0, -0.02, -depth*0.42);
+      box.castShadow = true; box.receiveShadow = true;
+      grp.add(front, box);
+      grp.position.set(zoneX0+zoneWidth/2, cy, frontZ);
+      grp.userData.mode = 'slide';
+      grp.userData.axis = 'z';
+      grp.userData.closedValue = frontZ;
+      grp.userData.openValue = frontZ + 0.36;
+      grp.userData.isOpen = false;
+      g.add(grp);
+    }
+  }
+
+  // Open-front shell — back, sides, top, bottom, deliberately with NO front
+  // face. A single solid box here would leave a same-colored wall sitting
+  // right behind the doors, so opening a door (or an open-shelf section)
+  // would never actually reveal anything — the interior needs a real gap.
+  function addShell(g, width, height, depth, y0){
+    addMesh(g, new THREE.BoxGeometry(width, height, 0.02), sharedCabinetMat, 0, y0+height/2, -depth/2+0.01);
+    addMesh(g, new THREE.BoxGeometry(0.02, height, depth), sharedCabinetMat, -width/2, y0+height/2, 0);
+    addMesh(g, new THREE.BoxGeometry(0.02, height, depth), sharedCabinetMat, width/2, y0+height/2, 0);
+    addMesh(g, new THREE.BoxGeometry(width, 0.02, depth), sharedCabinetMat, 0, y0+height, 0);
+    addMesh(g, new THREE.BoxGeometry(width, 0.02, depth), sharedCabinetMat, 0, y0, 0);
+  }
+
+  // A shorter open-front cabinet sitting on top of the main wardrobe,
+  // spanning the full width — the same leaf-splitting hinged-door logic
+  // used below automatically gives a wide loft several small doors.
+  function buildLoft(g, width, mainHeight, loftHeight, depth){
+    var y0 = mainHeight + 0.03;
+    addShell(g, width, loftHeight, depth, y0);
+    var frontZ = depth/2;
+    var innerHeight = loftHeight - 0.06;
+    var centerY = y0 + loftHeight/2;
+    addWardrobeInterior(g, {
+      width: width-0.04, height: innerHeight, depth: depth-0.05,
+      centerX: 0, centerY: centerY, frontZ: frontZ-0.02, shelves: 1
+    });
+    buildHingedDoors(g, -width/2, width, frontZ, centerY, innerHeight);
+  }
+
+  // =================================================================
+  // Main build
+  // =================================================================
+  var wardrobeGroup = null;
+  function buildWardrobe(){
+    if (wardrobeGroup) scene.remove(wardrobeGroup);
+    wardrobeGroup = new THREE.Group();
+
+    recomputeWallWidth();
+    var width = WALL.width, height = WALL.height, depth = DEPTH;
+
+    addShell(wardrobeGroup, width, height, depth, 0);
+    addMesh(wardrobeGroup, new THREE.BoxGeometry(width-0.04, 0.08, 0.03), darkTrimMat, 0, 0.04, depth/2+0.005);
+
+    var doorHeight = height - 0.16;
+    var doorCenterY = 0.1 + doorHeight/2;
+    var frontZ = depth/2;
+
+    var x = -width/2;
+    SECTIONS.forEach(function(sec, i){
+      var secX0 = x;
+      if (sec.type === 'drawers'){
+        buildDrawers(wardrobeGroup, secX0, sec.width, frontZ, height, Math.max(1, sec.count), depth);
+      } else {
+        addWardrobeInterior(wardrobeGroup, {
+          width: sec.width-0.04, height: doorHeight-0.02, depth: depth-0.05,
+          centerX: secX0+sec.width/2, centerY: doorCenterY, frontZ: frontZ-0.02,
+          shelves: sec.shelves || 0
+        });
+        if (sec.type === 'doors'){
+          if (sec.doorStyle === 'sliding'){
+            buildSlidingDoors(wardrobeGroup, secX0, sec.width, frontZ, doorHeight, doorCenterY);
+          } else {
+            buildHingedDoors(wardrobeGroup, secX0, sec.width, frontZ, doorCenterY, doorHeight);
+          }
+        }
+        // 'open' — no doors at all, the shelving stays fully exposed.
+      }
+      x += sec.width;
+      if (i < SECTIONS.length-1){
+        addMesh(wardrobeGroup, new THREE.BoxGeometry(0.02, height, depth), sharedInteriorMat, x, height/2, 0, false);
+      }
+    });
+
+    if (LOFT.enabled){
+      buildLoft(wardrobeGroup, width, height, LOFT.height, depth);
+    }
+
+    wardrobeGroup.position.set(0, 0, WALL_Z + depth/2 + 0.02);
+    scene.add(wardrobeGroup);
+  }
+
+  function regenerate(){
+    rebuildBackdrop();
+    buildWardrobe();
+    fitCameraToWardrobe();
+  }
+
+  // =================================================================
+  // UI wiring
+  // =================================================================
+  function makeStepperRow(label, value, min, max, onChange){
+    var row = document.createElement('div');
+    row.className = 'stepper-row';
+    var lbl = document.createElement('span');
+    lbl.className = 'stepper-label'; lbl.textContent = label;
+    var stepper = document.createElement('div');
+    stepper.className = 'stepper';
+    var minus = document.createElement('button');
+    minus.className = 'stepper-btn'; minus.type = 'button'; minus.innerHTML = '&minus;';
+    var count = document.createElement('span');
+    count.className = 'stepper-count'; count.textContent = value;
+    var plus = document.createElement('button');
+    plus.className = 'stepper-btn'; plus.type = 'button'; plus.textContent = '+';
+    var current = value;
+    minus.addEventListener('click', function(){
+      current = clamp(current-1, min, max);
+      count.textContent = current;
+      onChange(current);
+    });
+    plus.addEventListener('click', function(){
+      current = clamp(current+1, min, max);
+      count.textContent = current;
+      onChange(current);
+    });
+    stepper.appendChild(minus); stepper.appendChild(count); stepper.appendChild(plus);
+    row.appendChild(lbl); row.appendChild(stepper);
+    return row;
+  }
+
+  var SECTION_TYPES = [['doors','Doors'],['drawers','Drawers'],['open','Open shelf']];
+
+  function renderSections(){
+    var list = document.getElementById('sections-list');
+    list.innerHTML = '';
+
+    SECTIONS.forEach(function(sec){
+      var card = document.createElement('div');
+      card.className = 'sec-card';
+
+      var row1 = document.createElement('div');
+      row1.className = 'sec-row1';
+
+      var typeSel = document.createElement('select');
+      typeSel.className = 'sec-type';
+      SECTION_TYPES.forEach(function(t){
+        var opt = document.createElement('option');
+        opt.value = t[0]; opt.textContent = t[1];
+        if (sec.type === t[0]) opt.selected = true;
+        typeSel.appendChild(opt);
+      });
+      typeSel.addEventListener('change', function(){
+        sec.type = typeSel.value;
+        if (sec.type === 'doors' && !sec.doorStyle) sec.doorStyle = 'hinged';
+        if ((sec.type === 'doors' || sec.type === 'open') && sec.shelves === undefined) sec.shelves = 3;
+        if (sec.type === 'drawers' && !sec.count) sec.count = 2;
+        renderSections();
+        buildWardrobe();
+      });
+
+      var widthWrap = document.createElement('div');
+      widthWrap.className = 'unit-input sec-width';
+      var widthInput = document.createElement('input');
+      widthInput.type = 'number'; widthInput.min = '0.35'; widthInput.max = '2.5'; widthInput.step = '0.05';
+      widthInput.value = sec.width;
+      var widthUnit = document.createElement('span'); widthUnit.textContent = 'm';
+      widthWrap.appendChild(widthInput); widthWrap.appendChild(widthUnit);
+      widthInput.addEventListener('change', function(){
+        sec.width = clamp(parseFloat(widthInput.value) || sec.width, 0.35, 2.5);
+        renderSections();
+        regenerate();
+      });
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'sec-del'; delBtn.type = 'button'; delBtn.title = 'Remove section';
+      delBtn.innerHTML = '&#10005;';
+      delBtn.disabled = SECTIONS.length <= 1;
+      delBtn.addEventListener('click', function(){
+        if (SECTIONS.length <= 1) return;
+        SECTIONS = SECTIONS.filter(function(s){ return s.id !== sec.id; });
+        renderSections();
+        regenerate();
+      });
+
+      row1.appendChild(typeSel);
+      row1.appendChild(widthWrap);
+      row1.appendChild(delBtn);
+      card.appendChild(row1);
+
+      var sub = document.createElement('div');
+      sub.className = 'sec-sub';
+
+      if (sec.type === 'doors'){
+        var styleRow = document.createElement('div');
+        styleRow.className = 'sec-doorstyle';
+        [['hinged','Hinged'],['sliding','Sliding']].forEach(function(o){
+          var b = document.createElement('button');
+          b.type = 'button'; b.textContent = o[1];
+          if (sec.doorStyle === o[0]) b.classList.add('active');
+          b.addEventListener('click', function(){
+            sec.doorStyle = o[0];
+            renderSections();
+            buildWardrobe();
+          });
+          styleRow.appendChild(b);
+        });
+        sub.appendChild(styleRow);
+        sub.appendChild(makeStepperRow('Shelves', sec.shelves||0, 0, 6, function(v){ sec.shelves = v; buildWardrobe(); }));
+      } else if (sec.type === 'drawers'){
+        sub.appendChild(makeStepperRow('Drawers', sec.count||1, 1, 6, function(v){ sec.count = v; buildWardrobe(); }));
+      } else {
+        sub.appendChild(makeStepperRow('Shelves', sec.shelves||0, 0, 6, function(v){ sec.shelves = v; buildWardrobe(); }));
+      }
+      card.appendChild(sub);
+
+      list.appendChild(card);
+    });
+
+    var total = SECTIONS.reduce(function(s,x){ return s+x.width; }, 0);
+    document.getElementById('total-width-label').textContent = '(' + total.toFixed(2) + ' m total)';
+    document.getElementById('add-section-btn').disabled = SECTIONS.length >= MAX_SECTIONS;
+  }
+
+  document.getElementById('add-section-btn').addEventListener('click', function(){
+    if (SECTIONS.length >= MAX_SECTIONS) return;
+    SECTIONS.push({ id: nextSectionId++, type:'open', width:0.6, shelves:4 });
+    renderSections();
+    regenerate();
+  });
+
+  document.getElementById('wall-height').addEventListener('change', function(e){
+    WALL.height = clamp(parseFloat(e.target.value) || 2.4, 2.0, 2.7);
+    e.target.value = WALL.height;
+    regenerate();
+  });
+
+  var loftEnable = document.getElementById('loft-enable');
+  var loftHeightRow = document.getElementById('loft-height-row');
+  loftEnable.addEventListener('change', function(){
+    LOFT.enabled = loftEnable.checked;
+    loftHeightRow.style.display = LOFT.enabled ? 'block' : 'none';
+    regenerate();
+  });
+  document.getElementById('loft-height').addEventListener('change', function(e){
+    LOFT.height = clamp(parseFloat(e.target.value) || 0.5, 0.35, 0.9);
+    e.target.value = LOFT.height;
+    if (LOFT.enabled) regenerate();
+  });
+
+  function buildSwatchRow(containerId, palette, onPick, colorInputEl){
+    var row = document.getElementById(containerId);
+    palette.forEach(function(hex){
+      var sw = document.createElement('div');
+      sw.className = 'preset-swatch';
+      sw.style.background = hex;
+      sw.title = hex;
+      sw.addEventListener('click', function(){
+        colorInputEl.value = hex;
+        onPick(hex);
+      });
+      row.appendChild(sw);
+    });
+  }
+  var gCabinet = document.getElementById('global-cabinet-color');
+  var gHardware = document.getElementById('global-hardware-color');
+  buildSwatchRow('swatches-cabinet', PALETTES.cabinet, updateCabinetMat, gCabinet);
+  buildSwatchRow('swatches-hardware', PALETTES.hardware, updateHandleMat, gHardware);
+  gCabinet.addEventListener('input', function(e){ updateCabinetMat(e.target.value); });
+  gHardware.addEventListener('input', function(e){ updateHandleMat(e.target.value); });
+
+  document.getElementById('snapshot-btn').addEventListener('click', function(){
+    renderer.render(scene, camera);
+    var link = document.createElement('a');
+    link.download = 'wardrobe-design.png';
+    link.href = renderer.domElement.toDataURL('image/png');
+    link.click();
+  });
+
+  var viewBtns = document.querySelectorAll('.top-btn[data-view]');
+  viewBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      viewBtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var v = VIEWS[btn.dataset.view];
+      camera.position.set.apply(camera.position, v.pos);
+      controls.target.set.apply(controls.target, v.target);
+      controls.update();
+    });
+  });
+
+  // Click-to-interact: raycast against the wardrobe, walk up from the hit
+  // mesh to the nearest ancestor tagged with an interaction mode.
+  var raycaster = new THREE.Raycaster();
+  var mouse = new THREE.Vector2();
+  renderer.domElement.addEventListener('pointerdown', function(e){
+    if (e.button !== 0 || !wardrobeGroup) return;
+    var rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
+    mouse.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    var intersects = raycaster.intersectObject(wardrobeGroup, true);
+    if (!intersects.length) return;
+    var cursor = intersects[0].object;
+    while (cursor){
+      if (cursor.userData && cursor.userData.mode){ toggleInteractive(cursor); return; }
+      cursor = cursor.parent;
+    }
+  });
+
+  // Resize + render loop
+  function onResize(){
+    var w = holder.clientWidth, h = holder.clientHeight;
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  window.addEventListener('resize', onResize);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    controls.update();
+    if (interactiveTweens.length){
+      var now = performance.now();
+      interactiveTweens = interactiveTweens.filter(function(t){
+        var p = Math.min(1, (now - t.start) / t.duration);
+        var eased = 1 - Math.pow(1-p, 3);
+        var val = t.from + (t.to - t.from) * eased;
+        if (t.mode === 'rotate') t.obj.rotation[t.axis] = val; else t.obj.position[t.axis] = val;
+        return p < 1;
+      });
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  renderSections();
+  regenerate();
+  document.getElementById('loading-veil').style.display = 'none';
+
+  window.__wsDebug = {
+    toggleInteractive: toggleInteractive, buildWardrobe: buildWardrobe,
+    dumpGroup: function(){
+      var out = [];
+      wardrobeGroup.traverse(function(o){
+        if (o.isMesh){
+          var b = new THREE.Box3().setFromObject(o);
+          out.push({ mat: o.material && o.material.color ? '#'+o.material.color.getHexString() : null, min: b.min.toArray().map(function(v){return +v.toFixed(3);}), max: b.max.toArray().map(function(v){return +v.toFixed(3);}) });
+        }
+      });
+      return out;
+    }
+  };
+
+})();
+</script>
+</body>
+</html>
