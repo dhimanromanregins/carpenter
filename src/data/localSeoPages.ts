@@ -6,6 +6,8 @@ export interface LocalFaq {
 export interface LocalServiceBlurb {
   title: string;
   description: string;
+  /** Optional deep-link to a dedicated service page, e.g. /modular-kitchen-chandigarh. */
+  learnMoreHref?: string;
 }
 
 export interface LocalGalleryImage {
@@ -53,6 +55,7 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
         title: "Wardrobes",
         description:
           "Sliding and hinged wardrobes built to the exact wall dimensions of your room, with internal layouts planned around what you actually own — not a generic shelf-and-rod split that leaves half the space unused.",
+        learnMoreHref: "/custom-wardrobe-design",
       },
       {
         title: "Custom Carpentry",
@@ -130,11 +133,13 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
         title: "Modular Kitchens",
         description:
           "For Sector homes, we design to fit the existing kitchen footprint without touching load-bearing walls — often the biggest gain is smarter storage within the same square footage. For newer IT Park apartments, we build the full modular kitchen from a bare shell.",
+        learnMoreHref: "/modular-kitchen-chandigarh",
       },
       {
         title: "Wardrobes",
         description:
           "Converting an existing wardrobe niche or a spare box room into proper sliding or hinged storage, sized to what Chandigarh's older homes actually have to offer — usually less wall width than newer construction, so layout planning matters more.",
+        learnMoreHref: "/custom-wardrobe-design",
       },
       {
         title: "Custom Carpentry",
@@ -217,6 +222,7 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
         title: "Wardrobes",
         description:
           "Sliding or hinged wardrobes built into bedroom alcoves that are standard across a tower's floor plan, so we can usually plan the layout from your builder's floor plan before we even visit.",
+        learnMoreHref: "/custom-wardrobe-design",
       },
       {
         title: "Custom Carpentry",
@@ -299,6 +305,7 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
         title: "Wardrobes",
         description:
           "Multi-bedroom, multi-generational homes usually mean planning several wardrobes at once, each sized to the occupant — a teenager's room and a grandparent's room don't need the same internal layout.",
+        learnMoreHref: "/custom-wardrobe-design",
       },
       {
         title: "Custom Carpentry",

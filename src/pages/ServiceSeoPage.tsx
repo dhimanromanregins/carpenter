@@ -1,18 +1,18 @@
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { useSeo } from "@/hooks/useSeo";
-import { getLocalSeoPage } from "@/data/localSeoPages";
+import { getServiceSeoPage } from "@/data/serviceSeoPages";
 
-export function LocalSeoPage({ slug }: { slug: string }) {
+export function ServiceSeoPage({ slug }: { slug: string }) {
   const navigate = useNavigate();
-  const page = getLocalSeoPage(slug);
+  const page = getServiceSeoPage(slug);
 
   useSeo({
-    title: page?.metaTitle ?? "Interior Designer",
+    title: page?.metaTitle ?? "Interior Design Services",
     description: page?.metaDescription ?? "",
-    path: `/interior-designer-${slug}`,
+    path: `/${slug}`,
   });
 
   if (!page) return <Navigate to="/" replace />;
@@ -37,7 +37,7 @@ export function LocalSeoPage({ slug }: { slug: string }) {
           <div>
             <span className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-gold">
               <span className="h-px w-8 bg-gold" />
-              Serving {page.city}
+              {page.eyebrow}
             </span>
             <h1 className="mt-6 font-display text-4xl leading-[1.05] text-cream sm:text-5xl md:text-6xl">
               {page.heroHeadline}
@@ -57,7 +57,7 @@ export function LocalSeoPage({ slug }: { slug: string }) {
           </div>
           <RevealOnScroll>
             <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-gold/10">
-              <img src={page.heroImage} alt={`${page.city} interior design`} className="h-full w-full object-cover" />
+              <img src={page.heroImage} alt={page.heroHeadline} className="h-full w-full object-cover" />
             </div>
           </RevealOnScroll>
         </div>
@@ -71,24 +71,14 @@ export function LocalSeoPage({ slug }: { slug: string }) {
           ))}
         </div>
 
-        {/* Services */}
+        {/* Highlights */}
         <div className="mt-20">
-          <h2 className="font-display text-3xl text-cream md:text-4xl">
-            Our Services in {page.city}
-          </h2>
+          <h2 className="font-display text-3xl text-cream md:text-4xl">{page.highlightsTitle}</h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {page.services.map((service) => (
-              <GlassCard key={service.title} className="p-6">
-                <h3 className="font-display text-xl text-cream">{service.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-grey">{service.description}</p>
-                {service.learnMoreHref && (
-                  <Link
-                    to={service.learnMoreHref}
-                    className="mt-3 inline-block text-xs uppercase tracking-widest text-gold hover:text-gold-light"
-                  >
-                    Learn more →
-                  </Link>
-                )}
+            {page.highlights.map((item) => (
+              <GlassCard key={item.title} className="p-6">
+                <h3 className="font-display text-xl text-cream">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-grey">{item.description}</p>
               </GlassCard>
             ))}
           </div>
@@ -112,9 +102,7 @@ export function LocalSeoPage({ slug }: { slug: string }) {
 
         {/* Why choose us */}
         <div className="mt-20">
-          <h2 className="font-display text-3xl text-cream md:text-4xl">
-            Why Choose Dhiman Interiors in {page.city}
-          </h2>
+          <h2 className="font-display text-3xl text-cream md:text-4xl">{page.whyChooseUsTitle}</h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {page.whyChooseUs.map((item) => (
               <div key={item.title} className="flex gap-4">
@@ -149,9 +137,7 @@ export function LocalSeoPage({ slug }: { slug: string }) {
         {/* Final CTA */}
         <GlassCard className="mt-20 flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
           <div>
-            <h2 className="font-display text-2xl text-cream md:text-3xl">
-              Ready to start your {page.city} project?
-            </h2>
+            <h2 className="font-display text-2xl text-cream md:text-3xl">Ready to get started?</h2>
             <p className="mt-2 text-sm text-grey">Get an instant estimate, or book a site visit — no obligation.</p>
           </div>
           <MagneticButton variant="solid" onClick={() => navigate("/quote")}>
