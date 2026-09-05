@@ -1,0 +1,15 @@
+[Unit]
+Description=Dhiman Interiors FastAPI backend
+After=network.target
+
+[Service]
+# Update <user> to whichever Linux user owns the checked-out repo (run `whoami` on the VM to check).
+User=<user>
+WorkingDirectory=/home/<user>/carpenter/backend
+Environment="PATH=/home/<user>/carpenter/backend/myenv/bin"
+ExecStart=/home/<user>/carpenter/backend/myenv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
