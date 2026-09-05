@@ -8,6 +8,7 @@ import { FloorWalkthroughPage } from "@/pages/FloorWalkthroughPage";
 import { DesignStudioToolPage } from "@/pages/DesignStudioToolPage";
 import { InspirationPage } from "@/pages/InspirationPage";
 import { InspirationCategoryPage } from "@/pages/InspirationCategoryPage";
+import { LocalSeoPage } from "@/pages/LocalSeoPage";
 import { QuotationBuilderPage } from "@/pages/quotation/QuotationBuilderPage";
 import { QuotationResultPage } from "@/pages/quotation/QuotationResultPage";
 import { WardrobeQuotationResultPage } from "@/pages/quotation/WardrobeQuotationResultPage";
@@ -101,6 +102,10 @@ function App() {
             <Route path="/design-studio/floor-walkthrough" element={<FloorWalkthroughPage />} />
             <Route path="/inspiration" element={<InspirationPage />} />
             <Route path="/inspiration/:slug" element={<InspirationCategoryPage />} />
+            <Route path="/interior-designer-zirakpur" element={<LocalSeoPage slug="zirakpur" />} />
+            <Route path="/interior-designer-chandigarh" element={<LocalSeoPage slug="chandigarh" />} />
+            <Route path="/interior-designer-mohali" element={<LocalSeoPage slug="mohali" />} />
+            <Route path="/interior-designer-panchkula" element={<LocalSeoPage slug="panchkula" />} />
             <Route path="/quote" element={<QuotationBuilderPage />} />
             <Route path="/quote/wardrobe/:quotationId" element={<WardrobeQuotationResultPage />} />
             <Route path="/quote/tiles/:quotationId" element={<TileQuotationResultPage />} />

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 
 const YEAR = new Date().getFullYear();
@@ -32,7 +33,7 @@ export function Footer() {
           </div>
         </RevealOnScroll>
 
-        <div className="grid grid-cols-2 gap-10 py-16 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-10 py-16 md:grid-cols-5">
           <div className="col-span-2">
             <p className="font-display text-xl tracking-[0.15em] text-cream">
               DHIMAN <span className="text-gold">INTERIORS</span>
@@ -52,6 +53,34 @@ export function Footer() {
               <li>Projects</li>
               <li>Services</li>
               <li>Careers</li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-gold">
+              Areas We Serve
+            </p>
+            <ul className="space-y-2 text-sm text-grey">
+              <li>
+                <Link to="/interior-designer-zirakpur" className="transition-colors hover:text-gold">
+                  Zirakpur
+                </Link>
+              </li>
+              <li>
+                <Link to="/interior-designer-chandigarh" className="transition-colors hover:text-gold">
+                  Chandigarh
+                </Link>
+              </li>
+              <li>
+                <Link to="/interior-designer-mohali" className="transition-colors hover:text-gold">
+                  Mohali
+                </Link>
+              </li>
+              <li>
+                <Link to="/interior-designer-panchkula" className="transition-colors hover:text-gold">
+                  Panchkula
+                </Link>
+              </li>
             </ul>
           </div>
 
