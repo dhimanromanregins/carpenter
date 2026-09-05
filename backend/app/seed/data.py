@@ -146,6 +146,13 @@ PRICING_SETTINGS = [
     ("default_glass_cabinet_standard_slug", "standard-glass-cabinet", "Standard glass cabinet product"),
     ("default_glass_cabinet_custom_slug", "custom-glass-cabinet", "Custom-size glass cabinet rate product"),
     ("default_rolling_shutter_product_slug", "studio-rolling-shutter", "Fallback rolling shutter product"),
+    ("wardrobe_standard_rate_per_sqft", 1200, "Wardrobe Standard finish rate per sq.ft."),
+    ("wardrobe_premium_rate_per_sqft", 1400, "Wardrobe Premium finish rate per sq.ft."),
+    ("wardrobe_acrylic_rate_per_sqft", 1500, "Wardrobe Acrylic finish rate per sq.ft."),
+    ("tiles_standard_rate_per_sqft", 120, "Tiles & Flooring Standard finish rate per sq.ft."),
+    ("tiles_premium_rate_per_sqft", 150, "Tiles & Flooring Premium finish rate per sq.ft."),
+    ("tiles_chemical_extra_per_sqft", 10, "Extra charge per sq.ft when chemical adhesive fixing is chosen"),
+    ("ceiling_rate_per_sqft", 250, "False ceiling rate per sq.ft. (single tier, no Standard/Premium split)"),
 ]
 
 CITIES = [

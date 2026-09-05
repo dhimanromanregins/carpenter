@@ -14,4 +14,4 @@ def generate_quotation_number(db: Session) -> str:
         db.flush()
     row.last_seq += 1
     db.flush()
-    return f"QT-{year}-{row.last_seq:06d}"
+    return f"DI/{year}/QTN-{row.last_seq:02d}"

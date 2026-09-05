@@ -5,7 +5,7 @@ from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.envelope import register_error_handlers
 from app.routers import cities
-from app.routers.v1 import area, config, design, packages, products, quotations
+from app.routers.v1 import area, ceiling, config, contact, design, packages, products, quotations, tiles, wardrobe
 from app.seed.run import seed_all
 
 app = FastAPI(title="Carpenter Kitchen Quotation API")
@@ -28,6 +28,10 @@ app.include_router(products.router, prefix=API_V1_PREFIX)
 app.include_router(quotations.router, prefix=API_V1_PREFIX)
 app.include_router(cities.router, prefix=API_V1_PREFIX)
 app.include_router(design.router, prefix=API_V1_PREFIX)
+app.include_router(wardrobe.router, prefix=API_V1_PREFIX)
+app.include_router(tiles.router, prefix=API_V1_PREFIX)
+app.include_router(ceiling.router, prefix=API_V1_PREFIX)
+app.include_router(contact.router, prefix=API_V1_PREFIX)
 
 
 @app.on_event("startup")
