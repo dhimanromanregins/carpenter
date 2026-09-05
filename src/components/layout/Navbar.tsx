@@ -12,8 +12,8 @@ const LINKS = [
   {
     label: "Design Studio",
     href: "/design-studio",
-    isExternal: true,
-    isRoute: false,
+    isExternal: false,
+    isRoute: true,
     hideOnMobile: true,
   },
   {
