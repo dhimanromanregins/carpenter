@@ -6,7 +6,7 @@ export function FloatingContact() {
     <motion.div
       initial={{ opacity: 0, x: 40 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 3.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ delay: 1.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       className="fixed bottom-8 right-6 z-40 flex flex-col gap-3"
     >
       <a

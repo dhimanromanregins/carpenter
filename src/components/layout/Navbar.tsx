@@ -52,13 +52,25 @@ export function Navbar() {
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-[background,border-color] duration-500",
           scrolled ? "glass" : "border-b border-transparent bg-transparent"
         )}
       >
-        <nav className="container-luxury flex h-20 items-center justify-end gap-10">
+        <nav className="container-luxury flex h-20 items-center justify-between gap-10">
+          <a
+            href="#hero"
+            data-cursor="Home"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNav("#hero");
+            }}
+            className="flex items-center"
+          >
+            <img src="/logo.png" alt="Dhiman Interiors" className="h-11 w-11 object-contain md:h-12 md:w-12" />
+          </a>
+
           <ul className="hidden items-center gap-10 lg:flex">
             {LINKS.map((link) => (
               <li key={link.href} className="relative">

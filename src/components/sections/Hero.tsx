@@ -27,7 +27,7 @@ export function Hero() {
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.7, duration: 0.8 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
           className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-gold"
         >
           <span className="h-px w-10 bg-gold" />
@@ -38,13 +38,13 @@ export function Hero() {
           <AnimatedText
             text="Luxury Carpentry"
             by="word"
-            delay={1.9}
+            delay={0.5}
             className="block"
           />
           <AnimatedText
             text="Crafted To Perfection"
             by="word"
-            delay={2.3}
+            delay={0.7}
             className="block text-gradient-gold"
           />
         </h1>
@@ -52,7 +52,7 @@ export function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.9, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 0.9, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8 max-w-md text-base leading-relaxed text-grey md:text-lg"
         >
           Premium interior solutions for modern homes — bespoke wardrobes,
@@ -63,7 +63,7 @@ export function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 3.2, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 1.1, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="mt-12 flex flex-wrap items-center gap-5"
         >
           <MagneticButton
@@ -93,7 +93,7 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 3.6, duration: 1 }}
+        transition={{ delay: 1.3, duration: 1 }}
         className="absolute bottom-10 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3"
       >
         <span className="text-[10px] uppercase tracking-[0.3em] text-grey">
