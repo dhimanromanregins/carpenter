@@ -9,6 +9,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 
 from app.models import Quotation
 from app.pdf.format import amount_in_words_approx, format_inr
+from app.pdf.letterhead import build_header_image, page_decorator
 
 INK = colors.HexColor("#141414")
 GOLD = colors.HexColor("#C9A24B")
@@ -35,15 +36,13 @@ def build_wardrobe_pdf(quotation: Quotation) -> bytes:
         buffer,
         pagesize=A4,
         topMargin=18 * mm,
-        bottomMargin=18 * mm,
+        bottomMargin=24 * mm,
         leftMargin=20 * mm,
         rightMargin=20 * mm,
         title=f"Quotation {quotation.quotation_number}",
     )
 
     styles = getSampleStyleSheet()
-    company_style = ParagraphStyle("Company", parent=styles["Title"], textColor=INK, fontSize=18, leading=22)
-    tagline_style = ParagraphStyle("Tagline", parent=styles["Normal"], textColor=GREY, fontSize=9, leading=12)
     doc_title_style = ParagraphStyle("DocTitle", parent=styles["Title"], textColor=INK, fontSize=15, leading=19, alignment=TA_CENTER, spaceBefore=10, spaceAfter=2)
     doc_subtitle_style = ParagraphStyle("DocSubtitle", parent=styles["Normal"], textColor=GREY, fontSize=9, leading=13, alignment=TA_CENTER)
     label_style = ParagraphStyle("Label", parent=styles["Normal"], textColor=GREY, fontSize=9, leading=13)
@@ -58,8 +57,7 @@ def build_wardrobe_pdf(quotation: Quotation) -> bytes:
     elements = []
 
     # ---- Header ----
-    elements.append(Paragraph("DHIMAN INTERIORS", company_style))
-    elements.append(Paragraph("Interior Design &amp; Carpentry — Zirakpur, Punjab", tagline_style))
+    elements.append(build_header_image())
     rule = Table([[""]], colWidths=[170 * mm], rowHeights=[1.2])
     rule.setStyle(TableStyle([("LINEBELOW", (0, 0), (-1, -1), 1.2, GOLD)]))
     elements.append(Spacer(1, 3 * mm))
@@ -229,5 +227,6 @@ def build_wardrobe_pdf(quotation: Quotation) -> bytes:
     )
     elements.append(signature_table)
 
-    doc.build(elements)
+    decorator = page_decorator(quotation.quotation_number)
+    doc.build(elements, onFirstPage=decorator, onLaterPages=decorator)
     return buffer.getvalue()

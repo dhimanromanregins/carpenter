@@ -16,3 +16,4 @@ export function getCeilingQuotation(id: number | string, signal?: AbortSignal) {
 export function getCeilingQuotationPdfUrl(id: number | string) {
   return `${API_BASE_URL}/v1/ceiling/quotes/${id}/pdf`;
 }
+

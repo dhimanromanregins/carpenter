@@ -10,22 +10,22 @@ DEFAULT_CHEMICAL_EXTRA_PER_SQFT = 10.0
 
 TIER_INFO: dict[TileTier, dict] = {
     "standard": {
-        "name": "Standard",
-        "description": "Reliable, market-standard vitrified tile flooring.",
+        "name": "Premium",
+        "description": "Reliable, premium-grade vitrified tile flooring.",
         "included_items": [
-            "Standard vitrified tiles",
+            "Premium vitrified tiles",
             "Tile fixing as per selected method (cement or chemical adhesive)",
             "Tile grouting",
             "Skirting as per site requirement",
         ],
     },
     "premium": {
-        "name": "Premium",
-        "description": "Upgraded tile quality and finish for a richer look.",
+        "name": "Ultra Premium",
+        "description": "Ultra premium tile quality and finish for a richer look.",
         "included_items": [
-            "Premium vitrified tiles, superior finish",
+            "Ultra premium vitrified tiles, superior finish",
             "Tile fixing as per selected method (cement or chemical adhesive)",
-            "Premium tile grouting",
+            "Ultra premium tile grouting",
             "Skirting as per site requirement",
         ],
     },

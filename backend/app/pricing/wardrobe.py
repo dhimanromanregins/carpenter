@@ -12,36 +12,36 @@ DEFAULT_RATE_PER_SQFT: dict[WardrobeTier, float] = {"standard": 1200.0, "premium
 # Kitchen Package rows vs. their rate_per_sqft.
 TIER_INFO: dict[WardrobeTier, dict] = {
     "standard": {
-        "name": "Standard",
-        "description": "Reliable, market-standard wardrobe build.",
+        "name": "Premium",
+        "description": "Reliable, premium-grade wardrobe build.",
         "included_items": [
             "HDHMR board carcass",
             "0.8mm laminate shutter finish",
-            "Standard hinges & channels (Fevicol-grade)",
-            "Standard edge banding",
+            "Premium hinges & channels (Fevicol-grade)",
+            "Premium edge banding",
             "Basic screws & fasteners",
         ],
     },
     "premium": {
-        "name": "Premium",
-        "description": "Upgraded laminate finish and hardware for a richer look.",
+        "name": "Ultra Premium",
+        "description": "Ultra premium laminate finish and hardware for a richer look.",
         "included_items": [
             "Action Tesa HDHMR board carcass",
             "1mm laminate shutter finish",
-            "Premium hardware brand (Hettich / Hafle / Ebco) — soft-close hinges & channels",
-            "Premium edge banding",
-            "Standard screws & fasteners",
+            "Ultra premium hardware brand (Hettich / Hafle / Ebco) — soft-close hinges & channels",
+            "Ultra premium edge banding",
+            "Basic screws & fasteners",
         ],
     },
     "acrylic": {
-        "name": "Acrylic",
+        "name": "Luxury (Acrylic)",
         "description": "High-gloss acrylic shutters for a modern, reflective finish.",
         "included_items": [
             "Action Tesa HDHMR board carcass",
             "1mm high-gloss acrylic shutter finish",
-            "Premium hardware brand (Hettich / Hafle / Ebco) — soft-close hinges & channels",
-            "Premium edge banding",
-            "Standard screws & fasteners",
+            "Luxury hardware brand (Hettich / Hafle / Ebco) — soft-close hinges & channels",
+            "Luxury edge banding",
+            "Basic screws & fasteners",
         ],
     },
 }
