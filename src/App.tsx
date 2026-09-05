@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Loader } from "@/components/layout/Loader";
 import { Navbar } from "@/components/layout/Navbar";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
@@ -16,6 +16,10 @@ import { CeilingQuotationResultPage } from "@/pages/quotation/CeilingQuotationRe
 
 function App() {
   const [loaded, setLoaded] = useState(false);
+  const location = useLocation();
+  // These are full-bleed 3D tools with their own back-navigation and toolbars —
+  // the site's fixed top Navbar would visually collide with them.
+  const hideNavbar = location.pathname.startsWith("/design-studio");
 
   return (
     <>
@@ -24,7 +28,7 @@ function App() {
       {loaded && (
         <>
           <ScrollProgress />
-          <Navbar />
+          {!hideNavbar && <Navbar />}
 
           <Routes>
             <Route path="/" element={<HomePage />} />

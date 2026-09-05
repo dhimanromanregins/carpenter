@@ -110,7 +110,7 @@
 <div id="mobile-block">
   <h1>Floor Design</h1>
   <p>This interactive 3D floor designer needs a bigger screen. Please switch to a tablet or larger device.</p>
-  <a href="/">&larr; Back to home</a>
+  <a href="/" target="_top">&larr; Back to home</a>
 </div>
 
 <div id="app">
@@ -118,7 +118,7 @@
   <div id="loading-veil">Building the floor…</div>
   <div id="top-bar">
     <div class="top-btn-group">
-      <a class="top-btn" href="/design-studio" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Design Studio</a>
+      <a class="top-btn" href="/design-studio" target="_top" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Design Studio</a>
       <button class="top-btn active" data-view="perspective">Perspective</button>
       <button class="top-btn" data-view="top">Top view</button>
       <button class="top-btn" data-view="front">Front view</button>
@@ -2043,7 +2043,7 @@
   var kitchenRoom = ROOMS.filter(function(r){ return r.isKitchen; })[0];
   function goToKitchen(){
     var q = '?w=' + rw(kitchenRoom).toFixed(3) + '&d=' + rd(kitchenRoom).toFixed(3) + '&from=floor';
-    window.location.href = studioPath('/design-studio/kitchen', 'design-studio-kitchen.html') + q;
+    window.top.location.href = studioPath('/design-studio/kitchen', 'design-studio-kitchen.html') + q;
   }
   document.getElementById('kitchen-badge').addEventListener('click', goToKitchen);
   var raycaster = new THREE.Raycaster();
