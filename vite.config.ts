@@ -38,6 +38,9 @@ export default defineConfig({
       '/design-studio': 'design-studio.html',
       '/design-studio/kitchen': 'design-studio-kitchen.html',
       '/design-studio/wardrobe': 'design-studio-wardrobe.html',
+      '/design-studio/floor': 'design-studio-floor.html',
+      '/design-studio/bed': 'design-studio-bed.html',
+      '/design-studio/tv-panel': 'design-studio-tv-panel.html',
     }),
   ],
   resolve: {

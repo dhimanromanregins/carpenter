@@ -4,12 +4,20 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { getQuotation } from "@/api/quotations";
 import { ApiError } from "@/api/client";
+import { useSeo } from "@/hooks/useSeo";
 import type { QuotationSavedOut } from "@/types/quotation";
 
 export function QuotationResultPage() {
   const { quotationId } = useParams<{ quotationId: string }>();
   const [quotation, setQuotation] = useState<QuotationSavedOut | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useSeo({
+    title: "Your Kitchen Quotation",
+    description: "View and download your Dhiman Interiors kitchen quotation.",
+    path: `/quote/${quotationId ?? ""}`,
+    noindex: true,
+  });
 
   useEffect(() => {
     if (!quotationId) return;
@@ -36,9 +44,9 @@ export function QuotationResultPage() {
         {quotation && (
           <>
             <p className="text-xs uppercase tracking-widest text-gold">Quotation Generated</p>
-            <h2 className="mt-2 font-display text-2xl text-cream md:text-3xl">
+            <h1 className="mt-2 font-display text-2xl text-cream md:text-3xl">
               Quotation No: <span className="text-gold">{quotation.quotation_number}</span>
-            </h2>
+            </h1>
 
             <div className="mt-6 space-y-1 text-sm">
               <div className="flex justify-between text-grey">

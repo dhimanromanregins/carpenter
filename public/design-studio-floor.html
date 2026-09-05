@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Design your floor layout in interactive 3D with Dhiman Interiors' Floor Design tool. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio/floor" />
+<meta property="og:title" content="Floor Design — 3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Design your floor layout in interactive 3D." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio/floor" />
+<title>Floor Design — 3D Design Studio | Dhiman Interiors</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --panel: #FFFFFF;
+    --ink: #2A2620;
+    --sub: #7A7468;
+    --line: #E4DFD3;
+    --accent: #B5714A;
+    --accent-dark: #8C5333;
+    --danger: #B5453D;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); }
+
+  #mobile-block { display: none; }
+  #app { display: flex; }
+  @media (max-width: 767px) {
+    #app { display: none; }
+    #mobile-block {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; min-height: 100vh; padding: 40px 28px; text-align: center; background: var(--bg); color: var(--ink);
+    }
+    #mobile-block h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    #mobile-block p { font-size: 14px; color: var(--sub); line-height: 1.6; margin: 0; max-width: 320px; }
+    #mobile-block a { margin-top: 8px; padding: 11px 22px; border-radius: 999px; background: var(--accent-dark); color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; }
+  }
+
+  #app { position: relative; width: 100vw; height: 100vh; }
+  #canvas-holder { position: absolute; inset: 0; }
+  #canvas-holder canvas { display: block; }
+
+  #loading-veil {
+    position: absolute; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--sub); z-index: 5;
+  }
+
+  #top-bar {
+    position: absolute; top: 16px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
+  }
+  .top-btn-group { display: flex; gap: 6px; pointer-events: auto; }
+  .top-btn {
+    background: rgba(255,255,255,0.92); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); cursor: pointer; backdrop-filter: blur(4px);
+  }
+  .top-btn:hover { border-color: var(--accent); }
+  .top-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  #ai-help-btn { background: var(--accent-dark); color: #fff; border-color: var(--accent-dark); }
+  #ai-help-btn:hover { background: #74421F; border-color: #74421F; }
+
+  #kitchen-badge {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--accent-dark); color: #fff; border: none; border-radius: 999px;
+    padding: 12px 22px; font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(140,83,51,0.35); pointer-events: auto;
+  }
+  #kitchen-badge:hover { background: #74421F; }
+
+  #legend {
+    position: absolute; left: 16px; bottom: 16px; pointer-events: none;
+    background: rgba(255,255,255,0.9); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; font-size: 11.5px; color: var(--sub); max-width: 300px; line-height: 1.6;
+  }
+
+  #ai-modal {
+    position: absolute; inset: 0; background: rgba(30,26,20,0.35);
+    display: none; align-items: center; justify-content: center; z-index: 10;
+  }
+  #ai-modal.visible { display: flex; }
+  #ai-card {
+    width: 620px; max-width: 92vw; max-height: 88vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: var(--panel); border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  #ai-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  #ai-header h2 { margin: 0; font-size: 15px; font-weight: 700; }
+  #ai-close { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--sub); cursor: pointer; font-size: 14px; }
+  #ai-close:hover { background: #F3E3E1; color: var(--danger); }
+  #ai-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 220px; }
+  #ai-body p.hint { font-size: 11.5px; color: var(--sub); line-height: 1.5; margin: 0; text-align: center; }
+  #ai-body img { max-width: 100%; max-height: 55vh; border-radius: 10px; display: block; }
+  #ai-status { font-size: 12.5px; text-align: center; line-height: 1.5; }
+  #ai-status.error { color: var(--danger); }
+  .ai-spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent-dark); animation: ai-spin 0.8s linear infinite; }
+  @keyframes ai-spin { to { transform: rotate(360deg); } }
+  #ai-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); }
+  #ai-retry-btn, #ai-download-link {
+    padding: 9px 16px; border: none; border-radius: 8px; background: var(--accent-dark); color: #fff;
+    font-size: 12.5px; font-weight: 700; cursor: pointer; text-decoration: none; display: none;
+  }
+  #ai-retry-btn:hover, #ai-download-link:hover { background: #74421F; }
+</style>
+</head>
+<body>
+
+<div id="mobile-block">
+  <h1>Floor Design</h1>
+  <p>This interactive 3D floor designer needs a bigger screen. Please switch to a tablet or larger device.</p>
+  <a href="/">&larr; Back to home</a>
+</div>
+
+<div id="app">
+  <div id="canvas-holder"></div>
+  <div id="loading-veil">Building the floor…</div>
+  <div id="top-bar">
+    <div class="top-btn-group">
+      <a class="top-btn" href="/design-studio" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Design Studio</a>
+      <button class="top-btn active" data-view="perspective">Perspective</button>
+      <button class="top-btn" data-view="top">Top view</button>
+      <button class="top-btn" data-view="front">Front view</button>
+      <button class="top-btn" id="walk-btn">🚶 Walk inside</button>
+    </div>
+    <div class="top-btn-group">
+      <button class="top-btn" id="ai-help-btn">Get AI help</button>
+      <button class="top-btn" id="snapshot-btn">Save photo</button>
+    </div>
+  </div>
+  <div id="legend">Second floor plan &middot; 3D visualization. Room sizes match the drawing exactly; wall positions are a close visual approximation. Click the kitchen to open the full kitchen designer.</div>
+  <div id="walk-hint" style="display:none; position:absolute; left:50%; bottom:26px; transform:translateX(-50%); background:rgba(255,255,255,0.92); border:1px solid var(--line); border-radius:10px; padding:10px 16px; font-size:12px; color:var(--sub); pointer-events:none;">Drag to look around &middot; WASD or arrow keys to walk &middot; click the bed to lift it, a wardrobe door/drawer to open it, or the TV / kitchen to open their design</div>
+  <button id="kitchen-badge">🍳 Design this kitchen &rarr;</button>
+
+  <div id="ai-modal">
+    <div id="ai-card">
+      <div id="ai-header">
+        <h2>AI render of your floor</h2>
+        <button id="ai-close" title="Close">&#10005;</button>
+      </div>
+      <div id="ai-body">
+        <p class="hint">Sends a snapshot of this 3D floor to Gemini, which renders it with realistic materials, textures and lighting — same layout, same rooms.</p>
+      </div>
+      <div id="ai-footer">
+        <a id="ai-download-link" download="ai-floor-render.png">Download image</a>
+        <button id="ai-retry-btn">Try again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'undefined') {
+    document.write('<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+  }
+</script>
+<script>
+(function(){
+
+  // =================================================================
+  // Color + texture helpers (same technique as the kitchen designer)
+  // =================================================================
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var num = parseInt(hex, 16);
+    return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(function(v){ return clamp(Math.round(v),0,255).toString(16).padStart(2,'0'); }).join('');
+  }
+  function shadeColor(hex, percent){
+    var c = hexToRgb(hex);
+    var amt = percent/100;
+    var r = amt >= 0 ? c.r + (255-c.r)*amt : c.r*(1+amt);
+    var g = amt >= 0 ? c.g + (255-c.g)*amt : c.g*(1+amt);
+    var b = amt >= 0 ? c.b + (255-c.b)*amt : c.b*(1+amt);
+    return rgbToHex(r,g,b);
+  }
+  function makeCanvasTexture(draw, w, h){
+    var c = document.createElement('canvas');
+    c.width = w || 256; c.height = h || 256;
+    draw(c.getContext('2d'), c.width, c.height);
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+  function floorTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      var rows = 7, plankH = h/rows;
+      for (var r=0;r<rows;r++){
+        var shade = shadeColor(hex, (Math.random()-0.5)*16);
+        ctx.fillStyle = shade; ctx.fillRect(0, r*plankH, w, plankH);
+        ctx.globalAlpha = 0.35; ctx.strokeStyle = 'rgba(20,14,8,0.5)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0,r*plankH); ctx.lineTo(w,r*plankH); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }, 256, 256);
+  }
+  function tileTexture(tileHex){
+    var groutHex = shadeColor(tileHex, -18);
+    return makeCanvasTexture(function(ctx,w,h){
+      ctx.fillStyle = groutHex; ctx.fillRect(0,0,w,h);
+      var cols = 4, rows = 4, tw = w/cols, th = h/rows;
+      for (var r=0;r<rows;r++) for (var c=0;c<cols;c++){
+        ctx.fillStyle = shadeColor(tileHex, (Math.random()-0.5)*8);
+        ctx.fillRect(c*tw+1, r*th+1, tw-2, th-2);
+      }
+    }, 256, 256);
+  }
+  function makeFloorLabel(title, sub, worldWidth){
+    var c = document.createElement('canvas');
+    c.width = 512; c.height = 176;
+    var ctx = c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(20,30,472,110,16) : ctx.rect(20,30,472,110);
+    ctx.fill();
+    ctx.fillStyle = '#2A2620';
+    ctx.font = '700 40px -apple-system, Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, 256, 90);
+    if (sub){
+      ctx.fillStyle = '#7A7468';
+      ctx.font = '600 26px -apple-system, Arial';
+      ctx.fillText(sub, 256, 128);
+    }
+    var tex = new THREE.CanvasTexture(c);
+    var w = worldWidth || 2.2;
+    var h = w * (c.height/c.width);
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+    mesh.rotation.x = -Math.PI/2;
+    mesh.renderOrder = 2;
+    return mesh;
+  }
+
+  // =================================================================
+  // Scene setup
+  // =================================================================
+  var holder = document.getElementById('canvas-holder');
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xEFEAE0);
+  scene.fog = new THREE.Fog(0xEFEAE0, 22, 60);
+
+  var camera = new THREE.PerspectiveCamera(42, holder.clientWidth/holder.clientHeight, 0.1, 300);
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(holder.clientWidth, holder.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  holder.appendChild(renderer.domElement);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 2;
+  controls.maxDistance = 60;
+  controls.maxPolarAngle = Math.PI/2 - 0.02;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+  var hemi = new THREE.HemisphereLight(0xE9EDF5, 0xC7BFA9, 0.6);
+  scene.add(hemi);
+  var key = new THREE.DirectionalLight(0xfff2df, 1.2);
+  key.position.set(-14, 22, 10);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -14; key.shadow.camera.right = 14;
+  key.shadow.camera.top = 14; key.shadow.camera.bottom = -14;
+  key.shadow.camera.far = 60;
+  key.shadow.bias = -0.0015;
+  scene.add(key);
+  var fillLight = new THREE.DirectionalLight(0xdce6ff, 0.3);
+  fillLight.position.set(12, 8, -10);
+  scene.add(fillLight);
+
+  // =================================================================
+  // Materials
+  // =================================================================
+  var WALL_H = 2.7, WALL_T = 0.12;
+  var wallMat = new THREE.MeshStandardMaterial({ color: '#F3EFE6', roughness: 0.92 });
+  var extWallMat = new THREE.MeshStandardMaterial({ color: '#E7E1D2', roughness: 0.9 });
+  var woodFloorMat = new THREE.MeshStandardMaterial({ color: '#B98F5E', roughness: 0.6, map: floorTexture('#B98F5E') });
+  var tileFloorMat = new THREE.MeshStandardMaterial({ color: '#D8D3C6', roughness: 0.4, map: tileTexture('#D8D3C6') });
+  var stoneFloorMat = new THREE.MeshStandardMaterial({ color: '#C7C2B5', roughness: 0.75 });
+  var lobbyFloorMat = new THREE.MeshStandardMaterial({ color: '#CBB998', roughness: 0.5, map: tileTexture('#CBB998') });
+  var railMat = new THREE.MeshStandardMaterial({ color: '#8C8A83', roughness: 0.4, metalness: 0.5 });
+  // Plain alpha-blended glass (no `transmission`) — this Three.js build's
+  // transmission pass renders a blurred, muddy grey instead of a clear
+  // see-through tint, so a simple tinted-transparent material reads as
+  // glass far more reliably.
+  var glassMat = new THREE.MeshPhysicalMaterial({ color: 0xCFE7EF, roughness: 0.04, metalness: 0.05, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
+  var kitchenHighlightMat = new THREE.MeshStandardMaterial({ color: '#E8C9A0', roughness: 0.5, emissive: '#B5714A', emissiveIntensity: 0.06 });
+
+  var floorSlab = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({ color: '#DCD6C6', roughness: 0.95 }));
+  floorSlab.rotation.x = -Math.PI/2;
+  floorSlab.position.y = -0.02;
+  floorSlab.receiveShadow = true;
+  scene.add(floorSlab);
+
+  // =================================================================
+  // Room data — sized to the drawing's exact labeled dimensions; laid
+  // out in the same relative zoning (private wing left, kitchen/dining
+  // + top balcony at the back, lobby as the open central hub, stair+
+  // lift core and drawing room to the right, bedroom + bottom balcony
+  // at the front). Exact wall centerlines are a best-effort visual
+  // match — the source drawing doesn't dimension every internal wall.
+  // =================================================================
+  var ROOMS = [
+    { id:'bedroom', label:'Bedroom-1', sub:'5.785 × 3.775 m (widened toward the lift)', x0:5.5, x1:11.285, z0:1.35, z1:5.125, floor:woodFloorMat, walls:['S','E','N','W'], doors:{ S:{ width:(11.285-5.5)*0.75, at:0.5 }, N:{ width:1.0, at:0.121 } } },
+    { id:'toilet',  label:'', sub:'', x0:0, x1:3.3, z0:5.125, z1:6.7, floor:woodFloorMat, walls:[] },
+    { id:'tvunit',  label:'', sub:'', x0:3.3, x1:3.3, z0:5.125, z1:6.7, floor:woodFloorMat, walls:[] },
+    { id:'pooja',   label:'', sub:'', x0:0, x1:1.2, z0:6.85, z1:8.05, floor:woodFloorMat, walls:[] },
+    { id:'kitchen', label:'Kitchen', sub:'2.85 × 4.085 m — click to design', x0:0, x1:2.85, z0:8.2, z1:12.285, floor:kitchenHighlightMat, walls:['W'], isKitchen:true },
+    { id:'dining',  label:'', sub:'', x0:3.45, x1:6.3, z0:8.2, z1:12.285, floor:woodFloorMat, walls:[] },
+    { id:'core',    label:'Stair + Lift', sub:'', x0:0, x1:3.15, z0:1.2, z1:4.975, floor:woodFloorMat, walls:['S','W','N'], isCore:true },
+    { id:'lobby',   label:'', sub:'', x0:3.45, x1:5.35, z0:4.755, z1:7.65, floor:woodFloorMat, walls:[] },
+    { id:'drawing', label:'Open Kitchen', sub:'8.435 × 5.135 m', x0:2.85, x1:11.285, z0:10.65, z1:15.785, floor:woodFloorMat, walls:['E','N'] },
+    // En-suite bathroom for the bedroom, reached through the door already
+    // in the bedroom's north wall — S side is left open on purpose.
+    { id:'ensuite', label:'Bathroom', sub:'3.985 × 2.375 m (en-suite)', x0:7.3, x1:11.285, z0:5.125, z1:7.5, floor:tileFloorMat, walls:['W','N','E','S'], doors:{ W:{ width:0.9, at:0.2 } } },
+    // Small dining nook right in front of the bathroom's door.
+    { id:'diningNook', label:'', sub:'', x0:5.35, x1:7.3, z0:5.125, z1:6.5, floor:woodFloorMat, walls:[] }
+  ];
+  var BOTTOM_BALCONY = { x0:0, x1:11.285, z0:0, z1:1.2 };
+  var TOP_BALCONY = { x0:3.45, x1:11.285, z0:15.785, z1:16.985 };
+  var BUILDING = { x0:0, x1:11.285, z0:0, z1:16.985 };
+
+  function rw(r){ return r.x1-r.x0; }
+  function rd(r){ return r.z1-r.z0; }
+  function cx(r){ return (r.x0+r.x1)/2; }
+  function cz(r){ return (r.z0+r.z1)/2; }
+
+  function addWallSeg(x0,x1,z0,z1,mat){
+    var w = Math.max(x1-x0, WALL_T), d = Math.max(z1-z0, WALL_T);
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, WALL_H, d), mat);
+    mesh.position.set((x0+x1)/2, WALL_H/2, (z0+z1)/2);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    scene.add(mesh);
+    return mesh;
+  }
+
+  // r.doors[side] = { width, at } cuts a gap (at = fraction 0..1 along the
+  // wall, default centered) into that side's wall instead of building it
+  // solid — used for a room that's closed on every side but needs a door.
+  function buildRoomWalls(r){
+    var t = WALL_T/2;
+    (r.walls||[]).forEach(function(side){
+      var door = r.doors && r.doors[side];
+      if (side === 'W' || side === 'E'){
+        var wx0 = side === 'W' ? r.x0-t : r.x1-t;
+        var wx1 = side === 'W' ? r.x0+t : r.x1+t;
+        if (!door){ addWallSeg(wx0, wx1, r.z0, r.z1, wallMat); return; }
+        var zc = r.z0 + (r.z1-r.z0) * (door.at != null ? door.at : 0.5);
+        var zg0 = zc - door.width/2, zg1 = zc + door.width/2;
+        if (zg0 > r.z0) addWallSeg(wx0, wx1, r.z0, zg0, wallMat);
+        if (zg1 < r.z1) addWallSeg(wx0, wx1, zg1, r.z1, wallMat);
+      }
+      if (side === 'S' || side === 'N'){
+        var wz0 = side === 'S' ? r.z0-t : r.z1-t;
+        var wz1 = side === 'S' ? r.z0+t : r.z1+t;
+        if (!door){ addWallSeg(r.x0, r.x1, wz0, wz1, wallMat); return; }
+        var xc = r.x0 + (r.x1-r.x0) * (door.at != null ? door.at : 0.5);
+        var xg0 = xc - door.width/2, xg1 = xc + door.width/2;
+        if (xg0 > r.x0) addWallSeg(r.x0, xg0, wz0, wz1, wallMat);
+        if (xg1 < r.x1) addWallSeg(xg1, r.x1, wz0, wz1, wallMat);
+      }
+    });
+  }
+
+  function buildRoomFloor(r){
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(rw(r), rd(r)), r.floor);
+    mesh.rotation.x = -Math.PI/2;
+    mesh.position.set(cx(r), 0.01, cz(r));
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+  }
+
+  // =================================================================
+  // Light furniture (simple primitives)
+  // =================================================================
+  var woodMat = new THREE.MeshStandardMaterial({ color: '#8A6A47', roughness: 0.6 });
+  var fabricMat = new THREE.MeshStandardMaterial({ color: '#7A8B99', roughness: 0.85 });
+  var whiteMat = new THREE.MeshStandardMaterial({ color: '#F7F5F0', roughness: 0.5 });
+  var darkMat = new THREE.MeshStandardMaterial({ color: '#2B2B2E', roughness: 0.4 });
+
+  function box(w,h,d,mat,x,y,z,group){
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+    m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true;
+    group.add(m); return m;
+  }
+
+  var bedClickRegion = null;
+  var wardrobeClickRegion = null;
+  var tvPanelClickRegion = null;
+  var bedRig = null;
+  var wardrobeRig = null;
+  var liftRig = null;
+  var kitchenRigs = [];
+  var kitchenTickers = [];
+  var kitchenLightsOn = false;
+
+  // Full detailed hydraulic-lift storage bed (same design as the dedicated
+  // /design-studio/bed page), built directly into the floor scene so Walk
+  // Inside shows and can open the real thing, not a placeholder box.
+  // Rotated 90°: local Z (head-to-foot) runs along world +X, head against
+  // the room's west wall (r.x0).
+  function buildDetailedBed(r){
+    var BED_W = 1.8, BED_D = 2.1, LEG_H = 0.12, FRAME_H = 0.34, RAIL_T = 0.06,
+        MATTRESS_INSET = 0.02, PLATFORM_T = 0.10, MATTRESS_H = 0.24;
+
+    var frameWoodMat = new THREE.MeshStandardMaterial({ color:'#5A4530', roughness:0.55 });
+    var frameWoodMatLight = new THREE.MeshStandardMaterial({ color:'#7A5C3C', roughness:0.55 });
+    var headboardMat = new THREE.MeshStandardMaterial({ color:'#B9A489', roughness:0.75 });
+    var buttonMat = new THREE.MeshStandardMaterial({ color:'#8A7860', roughness:0.6 });
+    var mattressMat = new THREE.MeshStandardMaterial({ color:'#F4F1E9', roughness:0.85 });
+    var sheetMat = new THREE.MeshStandardMaterial({ color:'#FFFFFF', roughness:0.8 });
+    var duvetMat = new THREE.MeshStandardMaterial({ color:'#8FA6A0', roughness:0.85 });
+    var pillowMat = new THREE.MeshStandardMaterial({ color:'#FBFAF6', roughness:0.8 });
+    var pillowAccentMat = new THREE.MeshStandardMaterial({ color:'#C7896A', roughness:0.8 });
+    var metalMat = new THREE.MeshStandardMaterial({ color:'#3B3B3E', roughness:0.35, metalness:0.75 });
+    var chromeMat = new THREE.MeshStandardMaterial({ color:'#C9CCD1', roughness:0.2, metalness:0.9 });
+    var storageMat = new THREE.MeshStandardMaterial({ color:'#2C2A26', roughness:0.9 });
+    var storedFabricMat = new THREE.MeshStandardMaterial({ color:'#B5714A', roughness:0.8 });
+
+    var frameTopY = LEG_H + FRAME_H;
+    var root = new THREE.Group();
+    root.position.set(r.x0 + 0.05 + BED_D/2, 0, cz(r));
+    root.rotation.y = Math.PI/2;
+    scene.add(root);
+
+    var legInset = 0.12;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, LEG_H, 12), frameWoodMat);
+      mesh.position.set(s[0]*(BED_W/2-legInset), LEG_H/2, s[1]*(BED_D/2-legInset));
+      mesh.castShadow = true;
+      root.add(mesh);
+    });
+
+    var baseGroup = new THREE.Group();
+    baseGroup.position.set(0, LEG_H, 0);
+    root.add(baseGroup);
+
+    box(BED_W, RAIL_T, BED_D, frameWoodMat, 0, RAIL_T/2, 0, baseGroup);
+    var wellY = RAIL_T + 0.015;
+    box(BED_W-2*RAIL_T, 0.02, BED_D-2*RAIL_T, storageMat, 0, wellY, 0, baseGroup);
+    var wellWallH = FRAME_H - RAIL_T - 0.03;
+    box(BED_W-2*RAIL_T, wellWallH, 0.02, storageMat, 0, wellY+wellWallH/2, -(BED_D/2-RAIL_T), baseGroup);
+    box(BED_W-2*RAIL_T, wellWallH, 0.02, storageMat, 0, wellY+wellWallH/2, (BED_D/2-RAIL_T)-0.02, baseGroup);
+    box(0.02, wellWallH, BED_D-2*RAIL_T, storageMat, -(BED_W/2-RAIL_T), wellY+wellWallH/2, 0, baseGroup);
+    box(0.02, wellWallH, BED_D-2*RAIL_T, storageMat, (BED_W/2-RAIL_T)-0.02, wellY+wellWallH/2, 0, baseGroup);
+    box(BED_W, FRAME_H, RAIL_T, frameWoodMatLight, 0, FRAME_H/2, -(BED_D/2-RAIL_T/2), baseGroup);
+    box(BED_W, FRAME_H, RAIL_T, frameWoodMatLight, 0, FRAME_H/2, (BED_D/2-RAIL_T/2), baseGroup);
+    box(RAIL_T, FRAME_H, BED_D, frameWoodMatLight, -(BED_W/2-RAIL_T/2), FRAME_H/2, 0, baseGroup);
+    box(RAIL_T, FRAME_H, BED_D, frameWoodMatLight, (BED_W/2-RAIL_T/2), FRAME_H/2, 0, baseGroup);
+
+    box(0.5, 0.12, 0.4, storedFabricMat, -0.45, wellY+0.06+0.02, -0.55, baseGroup);
+    box(0.3, 0.1, 0.28, pillowMat, 0.4, wellY+0.05+0.02, -0.45, baseGroup);
+
+    var headboardGroup = new THREE.Group();
+    headboardGroup.position.set(0, FRAME_H, -(BED_D/2));
+    baseGroup.add(headboardGroup);
+    var HB_H = 0.85, HB_T = 0.09;
+    box(BED_W+0.08, HB_H, HB_T, headboardMat, 0, HB_H/2, -HB_T/2, headboardGroup);
+    for (var bx=-2; bx<=2; bx++){
+      for (var by=0; by<3; by++){
+        var bm = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 8), buttonMat);
+        bm.position.set(bx*0.32, 0.18+by*0.24, -HB_T-0.005);
+        headboardGroup.add(bm);
+      }
+    }
+    [-1,1].forEach(function(s){
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, frameTopY+HB_H*0.15, 8), frameWoodMat);
+      mesh.position.set(s*(BED_W/2-0.05), -(frameTopY+HB_H*0.15)/2 + HB_H*0.02, -0.02);
+      headboardGroup.add(mesh);
+    });
+
+    var platform = new THREE.Group();
+    platform.position.set(0, FRAME_H, -(BED_D/2 - MATTRESS_INSET));
+    baseGroup.add(platform);
+
+    var innerW = BED_W - 2*MATTRESS_INSET, innerD = BED_D - 2*MATTRESS_INSET - 0.01;
+    var slatCount = 9;
+    for (var si=0; si<slatCount; si++){
+      var sz = (si+0.5)/slatCount * innerD;
+      box(innerW-0.04, 0.02, innerD/slatCount-0.015, frameWoodMatLight, 0, 0.01, sz, platform);
+    }
+    box(innerW-0.02, MATTRESS_H*0.7, innerD-0.02, mattressMat, 0, PLATFORM_T-0.02+MATTRESS_H*0.35, innerD/2, platform);
+    box(innerW-0.06, MATTRESS_H*0.35, innerD-0.06, sheetMat, 0, PLATFORM_T-0.02+MATTRESS_H*0.7+MATTRESS_H*0.175, innerD/2, platform);
+    var mattressTopY = PLATFORM_T-0.02+MATTRESS_H;
+
+    [-1,1].forEach(function(s){
+      var p = box(0.55, 0.16, 0.4, pillowMat, s*0.42, mattressTopY+0.08, 0.32, platform);
+      p.rotation.z = s*0.03;
+      box(0.55, 0.02, 0.4, pillowAccentMat, s*0.42, mattressTopY+0.16, 0.32, platform);
+    });
+
+    var duvetFoldZ = innerD*0.42;
+    box(innerW-0.03, 0.1, innerD-duvetFoldZ-0.02, duvetMat, 0, mattressTopY+0.05, duvetFoldZ + (innerD-duvetFoldZ)/2 + 0.01, platform);
+    var rollMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, innerW-0.05, 16), duvetMat);
+    rollMesh.rotation.z = Math.PI/2;
+    rollMesh.position.set(0, mattressTopY+0.09, duvetFoldZ-0.06);
+    rollMesh.castShadow = true;
+    platform.add(rollMesh);
+
+    var strutUnit = 1;
+    function makeStrut(mat, radius){
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, strutUnit, 10), mat);
+      mesh.castShadow = true;
+      // pointToPoint() positions this with WORLD-space coordinates, so it
+      // must be parented directly to the scene — parenting it under
+      // baseGroup (itself offset and, here, rotated 90° as part of the
+      // bed's root) would re-transform an already-world position and
+      // send the strut miles from the bed.
+      scene.add(mesh);
+      return mesh;
+    }
+    var strutOuter = [makeStrut(metalMat, 0.022), makeStrut(metalMat, 0.022)];
+    var strutInner = [makeStrut(chromeMat, 0.012), makeStrut(chromeMat, 0.012)];
+
+    var anchorFixedLocal = [
+      new THREE.Vector3(-(innerW/2-0.05), RAIL_T+0.05, -(BED_D/2-RAIL_T) + innerD*0.62),
+      new THREE.Vector3( (innerW/2-0.05), RAIL_T+0.05, -(BED_D/2-RAIL_T) + innerD*0.62)
+    ];
+    var anchorMovingLocal = [
+      new THREE.Vector3(-(innerW/2-0.05), -0.02, innerD*0.62),
+      new THREE.Vector3( (innerW/2-0.05), -0.02, innerD*0.62)
+    ];
+
+    function pointToPoint(mesh, a, b, unitLen){
+      var dir = new THREE.Vector3().subVectors(b, a);
+      var len = dir.length();
+      var mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+      mesh.position.copy(mid);
+      mesh.scale.y = Math.max(len, 0.001) / unitLen;
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+    }
+    function updateStruts(){
+      for (var i=0;i<2;i++){
+        var worldFixed = baseGroup.localToWorld(anchorFixedLocal[i].clone());
+        var worldMoving = platform.localToWorld(anchorMovingLocal[i].clone());
+        pointToPoint(strutOuter[i], worldFixed, worldMoving, strutUnit);
+        var innerA = new THREE.Vector3().lerpVectors(worldFixed, worldMoving, 0.55);
+        pointToPoint(strutInner[i], innerA, worldMoving, strutUnit);
+      }
+    }
+
+    [-1,1].forEach(function(s){
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.08, 10), chromeMat);
+      mesh.rotation.z = Math.PI/2;
+      mesh.position.set(s*(innerW/2-0.03), FRAME_H, -(BED_D/2-RAIL_T));
+      baseGroup.add(mesh);
+    });
+
+    var MAX_ANGLE = THREE.MathUtils.degToRad(62);
+    var angle = 0, targetAngle = 0, isOpen = false;
+    updateStruts();
+
+    return {
+      toggle: function(){
+        isOpen = !isOpen;
+        targetAngle = isOpen ? MAX_ANGLE : 0;
+      },
+      tick: function(){
+        angle += (targetAngle - angle) * 0.07;
+        platform.rotation.x = -angle;
+        updateStruts();
+      },
+      footprint: function(){
+        var cx0 = root.position.x, cz0 = root.position.z;
+        return { x0: cx0-BED_D/2, x1: cx0+BED_D/2, z0: cz0-BED_W/2, z1: cz0+BED_W/2 };
+      }
+    };
+  }
+
+  // Full detailed almirah (same design as the dedicated /design-studio/
+  // wardrobe page) — hinged doors + drawers, both interactive — built
+  // directly into the floor scene. Rotated 180°: local "front" (+Z in the
+  // source design) faces world -Z, into the room, back flush against the
+  // room's north wall (r.z1).
+  function buildDetailedWardrobe(r, wardrobeX0, wardrobeX1){
+    var width = wardrobeX1 - wardrobeX0;
+    var height = 2.2, depth = 0.6;
+    var doorsW = width * (2.05/2.6), drawersW = width - doorsW;
+
+    var cabinetMat = new THREE.MeshStandardMaterial({ color:'#D9C7A8', roughness:0.6 });
+    var handleMat = new THREE.MeshStandardMaterial({ color:'#B08D57', roughness:0.3, metalness:0.9 });
+    var interiorMat = new THREE.MeshStandardMaterial({ color:'#F5F2EA', roughness:0.7 });
+    var rackMat = new THREE.MeshStandardMaterial({ color: shadeColor('#F5F2EA', -18), roughness:0.5 });
+
+    var group = new THREE.Group();
+    group.position.set((wardrobeX0+wardrobeX1)/2, 0, r.z1 - depth/2);
+    group.rotation.y = Math.PI;
+    scene.add(group);
+
+    function addMesh(g, w,h,d, mat, x,y,z, cast){
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+      mesh.position.set(x,y,z);
+      mesh.castShadow = cast !== false; mesh.receiveShadow = true;
+      g.add(mesh);
+      return mesh;
+    }
+    function addInterior(g, opts){
+      var mat = interiorMat;
+      var backZ = opts.frontZ - opts.depth;
+      var midZ = backZ + opts.depth/2;
+      var x0 = opts.centerX - opts.width/2, x1 = opts.centerX + opts.width/2;
+      addMesh(g, opts.width, opts.height, 0.02, mat, opts.centerX, opts.centerY, backZ+0.01, false);
+      addMesh(g, 0.02, opts.height, opts.depth, mat, x0, opts.centerY, midZ, false);
+      addMesh(g, 0.02, opts.height, opts.depth, mat, x1, opts.centerY, midZ, false);
+      addMesh(g, opts.width, 0.02, opts.depth, mat, opts.centerX, opts.centerY-opts.height/2, midZ, false);
+      var shelfCount = opts.shelves || 0;
+      for (var i=1;i<=shelfCount;i++){
+        var sy = opts.centerY - opts.height/2 + (opts.height/(shelfCount+1))*i;
+        addMesh(g, opts.width-0.03, 0.024, opts.depth-0.03, rackMat, opts.centerX, sy, midZ);
+        addMesh(g, opts.width-0.03, 0.026, 0.016, handleMat, opts.centerX, sy+0.012, opts.frontZ-0.01, false);
+      }
+    }
+
+    var tweens = [];
+    function toggleInteractive(obj){
+      var d = obj.userData;
+      d.isOpen = !d.isOpen;
+      var current = d.mode === 'rotate' ? obj.rotation[d.axis] : obj.position[d.axis];
+      var to = d.isOpen ? d.openValue : d.closedValue;
+      tweens = tweens.filter(function(t){ return t.obj !== obj; });
+      tweens.push({ obj: obj, mode: d.mode, axis: d.axis, from: current, to: to, start: performance.now(), duration: 420 });
+    }
+
+    function addHingedLeaf(parentGroup, opts){
+      var pivot = new THREE.Group();
+      pivot.position.set(opts.hingeX, opts.hingeY, opts.hingeZ);
+      var doorMesh = new THREE.Mesh(new THREE.BoxGeometry(opts.width, opts.height, 0.02), opts.mat);
+      doorMesh.position.set(opts.offsetX||0, 0, 0);
+      doorMesh.castShadow = true; doorMesh.receiveShadow = true;
+      pivot.add(doorMesh);
+      if (opts.handle){
+        var handle = new THREE.Mesh(new THREE.BoxGeometry(0.025,0.22,0.025), handleMat);
+        handle.position.set(opts.handle.x, opts.handle.y, opts.handle.z);
+        doorMesh.add(handle);
+      }
+      pivot.userData.mode = 'rotate';
+      pivot.userData.axis = 'y';
+      pivot.userData.closedValue = 0;
+      pivot.userData.openValue = opts.openAngle;
+      pivot.userData.isOpen = false;
+      parentGroup.add(pivot);
+      return pivot;
+    }
+
+    function buildHingedDoors(g, zoneX0, zoneWidth, frontZ, centerY, doorHeight){
+      var leafCount = clamp(Math.round(zoneWidth/0.6), 1, 6);
+      var leafWidth = zoneWidth/leafCount;
+      var leaves = [];
+      for (var i=0;i<leafCount;i++){
+        var lx0 = zoneX0 + i*leafWidth, lx1 = lx0 + leafWidth;
+        var hingeOnLeft = i < leafCount/2;
+        var panelW = leafWidth - 0.015;
+        var hingeX = hingeOnLeft ? lx0 : lx1;
+        var offsetX = hingeOnLeft ? panelW/2 : -panelW/2;
+        var handleX = hingeOnLeft ? (panelW/2-0.06) : -(panelW/2-0.06);
+        var pivot = addHingedLeaf(g, {
+          hingeX: hingeX, hingeY: centerY, hingeZ: frontZ+0.012,
+          width: panelW, height: doorHeight, offsetX: offsetX, mat: cabinetMat,
+          openAngle: hingeOnLeft ? -1.7 : 1.7,
+          handle: { x: handleX, y: 0, z: 0.02 }
+        });
+        leaves.push({ obj: pivot, x0: lx0, x1: lx1, y0: centerY-doorHeight/2, y1: centerY+doorHeight/2 });
+      }
+      return leaves;
+    }
+
+    function buildDrawers(g, zoneX0, zoneWidth, frontZ, height, count, depth){
+      var unitH = height/count;
+      var drawers = [];
+      for (var i=0;i<count;i++){
+        var cy = unitH*i + unitH/2;
+        var grp = new THREE.Group();
+        var front = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth-0.03, unitH-0.02, 0.02), cabinetMat);
+        front.castShadow = true; front.receiveShadow = true;
+        var handle = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth*0.4,0.02,0.02), handleMat);
+        handle.position.set(0, unitH*0.26, 0.02);
+        front.add(handle);
+        var innerBox = new THREE.Mesh(new THREE.BoxGeometry(zoneWidth-0.08, unitH*0.7, depth*0.8), interiorMat);
+        innerBox.position.set(0, -0.02, -depth*0.42);
+        innerBox.castShadow = true; innerBox.receiveShadow = true;
+        grp.add(front, innerBox);
+        grp.position.set(zoneX0+zoneWidth/2, cy, frontZ);
+        grp.userData.mode = 'slide';
+        grp.userData.axis = 'z';
+        grp.userData.closedValue = frontZ;
+        grp.userData.openValue = frontZ + 0.36;
+        grp.userData.isOpen = false;
+        g.add(grp);
+        drawers.push({ obj: grp, x0: zoneX0, x1: zoneX0+zoneWidth, y0: cy-unitH/2, y1: cy+unitH/2 });
+      }
+      return drawers;
+    }
+
+    function addShell(g, w,h,d, y0){
+      addMesh(g, w, h, 0.02, cabinetMat, 0, y0+h/2, -d/2+0.01);
+      addMesh(g, 0.02, h, d, cabinetMat, -w/2, y0+h/2, 0);
+      addMesh(g, 0.02, h, d, cabinetMat, w/2, y0+h/2, 0);
+      addMesh(g, w, 0.02, d, cabinetMat, 0, y0+h, 0);
+      addMesh(g, w, 0.02, d, cabinetMat, 0, y0, 0);
+    }
+
+    addShell(group, width, height, depth, 0);
+    var doorHeight = height - 0.16;
+    var doorCenterY = 0.1 + doorHeight/2;
+    var frontZ = depth/2;
+
+    addInterior(group, { width: doorsW-0.04, height: doorHeight-0.02, depth: depth-0.05, centerX: -width/2+doorsW/2, centerY: doorCenterY, frontZ: frontZ-0.02, shelves: 4 });
+    var leaves = buildHingedDoors(group, -width/2, doorsW, frontZ, doorCenterY, doorHeight);
+    var drawers = buildDrawers(group, -width/2+doorsW, drawersW, frontZ, height, 2, depth);
+    var interactive = leaves.concat(drawers);
+
+    return {
+      tick: function(){
+        if (!tweens.length) return;
+        var now = performance.now();
+        tweens = tweens.filter(function(t){
+          var p = Math.min(1, (now - t.start) / t.duration);
+          var eased = 1 - Math.pow(1-p, 3);
+          var val = t.from + (t.to - t.from) * eased;
+          if (t.mode === 'rotate') t.obj.rotation[t.axis] = val; else t.obj.position[t.axis] = val;
+          return p < 1;
+        });
+      },
+      // The group is mirrored 180°, so convert world (x,y) to the
+      // wardrobe's own local space before matching a zone.
+      toggleNear: function(worldX, worldY){
+        var localX = -(worldX - group.position.x);
+        for (var i=0;i<interactive.length;i++){
+          var it = interactive[i];
+          if (localX >= it.x0 && localX <= it.x1 && worldY >= it.y0 && worldY <= it.y1){
+            toggleInteractive(it.obj);
+            return;
+          }
+        }
+      }
+    };
+  }
+
+  function buildBed(r){
+    // Full detailed hydraulic-lift bed, head against the west wall — same
+    // design as /design-studio/bed, interactive right here in the room.
+    bedRig = buildDetailedBed(r);
+    bedClickRegion = bedRig.footprint();
+    // TV feature wall on the east wall, facing the foot of the bed: a
+    // wood accent panel behind the TV, the TV itself (bezel + screen),
+    // and a floating console shelf with a soundbar underneath.
+    var tvCenterZ = cz(r), tvPanelW = 1.8;
+    box(0.03, 1.6, tvPanelW, woodMat, r.x1-0.015, 1.35, tvCenterZ, scene);
+    box(0.045, 0.7, 1.2, darkMat, r.x1-0.05, 1.6, tvCenterZ, scene);
+    box(0.01, 0.62, 1.1, new THREE.MeshStandardMaterial({ color:'#12151C', roughness:0.15, metalness:0.4 }), r.x1-0.073, 1.6, tvCenterZ, scene);
+    box(0.35, 0.06, 1.4, woodMat, r.x1-0.2, 1.1, tvCenterZ, scene);
+    box(0.08, 0.05, 0.6, darkMat, r.x1-0.2, 1.16, tvCenterZ, scene);
+    tvPanelClickRegion = {
+      x0: r.x1 - 0.35, x1: r.x1,
+      z0: tvCenterZ - tvPanelW/2, z1: tvCenterZ + tvPanelW/2
+    };
+    // Wall-mounted AC unit on the east wall.
+    box(0.08, 0.3, 0.9, whiteMat, r.x1-0.06, 2.2, cz(r), scene);
+    // Wardrobe fills the rest of the north wall, clear of the door gap.
+    var nDoor = r.doors.N;
+    var nDoorCenter = r.x0 + rw(r) * nDoor.at;
+    var nDoorX1 = nDoorCenter + nDoor.width/2;
+    var wardrobeX0 = nDoorX1 + 0.1, wardrobeX1 = r.x1 - 0.05;
+    // Full detailed almirah, doors + drawers both interactive — same
+    // design as /design-studio/wardrobe, built right here in the room.
+    wardrobeRig = buildDetailedWardrobe(r, wardrobeX0, wardrobeX1);
+    wardrobeClickRegion = {
+      x0: wardrobeX0, x1: wardrobeX1,
+      z0: r.z1 - 0.6, z1: r.z1
+    };
+  }
+
+  function buildDiningSet(r){
+    var g = new THREE.Group();
+    box(1.6, 0.75, 0.9, woodMat, 0, 0.375, 0, g);
+    var chairPos = [[-1.0,0],[1.0,0],[0,0.65],[0,-0.65]];
+    chairPos.forEach(function(p){ box(0.42,0.85,0.42,darkMat,p[0],0.425,p[1],g); });
+    g.position.set(cx(r), 0, cz(r));
+    scene.add(g);
+  }
+
+  function buildSofaSet(r){
+    var g = new THREE.Group();
+    box(2.6, 0.75, 0.9, fabricMat, 0, 0.375, -0.9, g);
+    box(1.6, 0.75, 0.9, fabricMat, -0.9, 0.375, 0.9, g);
+    box(1.1, 0.4, 0.6, woodMat, 0, 0.2, 0.1, g);
+    box(1.1, 1.4, 0.12, darkMat, 1.2, 0.7, 1.6, g);
+    g.position.set(cx(r), 0, cz(r)-0.4);
+    scene.add(g);
+  }
+
+  function buildPoojaShelf(r){
+    var g = new THREE.Group();
+    box(1.0, 1.6, 0.35, woodMat, 0, 0.8, 0, g);
+    box(1.0, 0.05, 0.35, new THREE.MeshStandardMaterial({color:'#D8B978', roughness:0.4, metalness:0.3}), 0, 1.3, 0, g);
+    g.position.set(cx(r), 0, r.z0+0.2);
+    scene.add(g);
+  }
+
+  function buildWC(r){
+    // Realistic, interactive en-suite bathroom: a vanity with a working
+    // cabinet door and a light-up mirror, a toilet whose lid opens, and a
+    // corner glass shower with a sliding door and rain head.
+    var x0 = r.x0, z0 = r.z0;
+    var vanityTopMat = new THREE.MeshStandardMaterial({ color:'#EDE7DA', roughness:0.25, metalness:0.05 });
+    var chromeMat2 = new THREE.MeshStandardMaterial({ color:'#C9CCD1', roughness:0.2, metalness:0.85 });
+    var mirrorMat2 = new THREE.MeshStandardMaterial({ color:'#D8E2E6', roughness:0.05, metalness:0.7 });
+    var mirrorLightMat = new THREE.MeshStandardMaterial({ color:'#FFF4DC', emissive:'#000000', emissiveIntensity:0 });
+    var toiletMat = new THREE.MeshStandardMaterial({ color:'#FBFAF7', roughness:0.25 });
+    var towelMat = new THREE.MeshStandardMaterial({ color:'#8FA6A0', roughness:0.8 });
+    var vanityCabMat = new THREE.MeshStandardMaterial({ color:'#5A4530', roughness:0.5 });
+    var drainMat = new THREE.MeshStandardMaterial({ color:'#2B2B2E', roughness:0.4, metalness:0.5 });
+
+    // ---- Vanity, against the west wall (clear of the door swing) ----
+    var vz0 = z0+0.95, vz1 = z0+2.35, vDepth = 0.5, vCZ = (vz0+vz1)/2;
+    box(vDepth, 0.85, vz1-vz0, vanityCabMat, x0+vDepth/2, 0.425, vCZ, scene);
+    box(vDepth+0.04, 0.04, vz1-vz0+0.04, vanityTopMat, x0+vDepth/2, 0.87, vCZ, scene);
+    var basin2 = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.15, 0.1, 20), vanityTopMat);
+    basin2.position.set(x0+vDepth-0.16, 0.92, vCZ);
+    basin2.castShadow = true;
+    scene.add(basin2);
+    box(0.03, 0.24, 0.03, chromeMat2, x0+vDepth-0.36, 1.03, vCZ, scene);
+    box(0.16, 0.03, 0.03, chromeMat2, x0+vDepth-0.30, 1.14, vCZ, scene);
+    box(0.02, 0.62, vz1-vz0-0.1, mirrorMat2, x0+0.011, 1.52, vCZ, scene);
+    var mirrorLight = box(0.03, 0.03, vz1-vz0-0.16, mirrorLightMat, x0+0.02, 1.85, vCZ, scene);
+    box(0.02, 0.02, 0.42, chromeMat2, x0+0.03, 0.95, vz0-0.28, scene); // towel bar
+    var towel = box(0.28, 0.3, 0.03, towelMat, x0+0.03, 0.78, vz0-0.28, scene);
+    towel.rotation.x = 0.15;
+
+    // Vanity cabinet — two smaller hinged doors meeting at the middle
+    // (not one wide door) so each one's open swing stays clear of the
+    // wall instead of poking through it.
+    [[vz0+0.02, vCZ, 1], [vCZ, vz1-0.02, -1]].forEach(function(seg){
+      var lz0 = seg[0], lz1 = seg[1], sign = seg[2], segLen = lz1-lz0;
+      var hingeZ = sign>0 ? lz0 : lz1;
+      var pivot = new THREE.Group();
+      pivot.position.set(x0+vDepth-0.02, 0.42, hingeZ);
+      var offsetZ = sign>0 ? (segLen/2-0.01) : -(segLen/2-0.01);
+      var doorMesh = box(0.03, 0.7, segLen-0.02, vanityCabMat, 0, 0, offsetZ, pivot);
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.14, 0.02), chromeMat2);
+      handle.position.set(0.025, 0, sign>0 ? (segLen-0.12) : -(segLen-0.12));
+      doorMesh.add(handle);
+      scene.add(pivot);
+      pivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue: sign>0 ? 1.3 : -1.3, isOpen:false };
+      kitchenRigs.push({
+        // Capped below the countertop (0.87) so a click up at the mirror
+        // doesn't also fall inside this region and open the cabinet.
+        hitTest: function(px,pz,py){ return px>=x0-0.05 && px<=x0+vDepth+0.15 && pz>=lz0 && pz<=lz1 && (py==null || py<=0.85); },
+        toggle: function(){ kToggleGlobal(pivot); },
+        tick: function(){}
+      });
+    });
+
+    // Mirror light — click the mirror to switch it on.
+    var vanityLightOn = false;
+    kitchenRigs.push({
+      hitTest: function(px,pz,py){ return px>=x0-0.05 && px<=x0+0.15 && pz>=vz0+0.05 && pz<=vz1-0.05 && (py==null || py>=0.9); },
+      toggle: function(){
+        vanityLightOn = !vanityLightOn;
+        mirrorLight.material.emissive.set(vanityLightOn ? '#FFDFA0' : '#000000');
+        mirrorLight.material.emissiveIntensity = vanityLightOn ? 0.9 : 0;
+      },
+      tick: function(){}
+    });
+
+    // ---- Toilet, south-east corner — the lid tilts open on click ----
+    var wcCX = x0+3.4, wcCZ = z0+0.55;
+    box(0.38, 0.38, 0.5, toiletMat, wcCX, 0.19, wcCZ, scene);
+    box(0.36, 0.08, 0.46, toiletMat, wcCX, 0.41, wcCZ, scene);
+    box(0.34, 0.36, 0.16, toiletMat, wcCX, 0.56, wcCZ+0.25, scene);
+    box(0.34, 0.03, 0.42, toiletMat, wcCX, 0.44, wcCZ, scene); // fixed seat ring
+    var lidPivot = new THREE.Group();
+    lidPivot.position.set(wcCX, 0.455, wcCZ+0.2);
+    var lid = box(0.32, 0.02, 0.4, toiletMat, 0, 0, -0.2, lidPivot);
+    scene.add(lidPivot);
+    lidPivot.userData = { mode:'rotate', axis:'x', closedValue:0, openValue:1.75, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=wcCX-0.22 && px<=wcCX+0.22 && pz>=wcCZ-0.3 && pz<=wcCZ+0.45; },
+      toggle: function(){ kToggleGlobal(lidPivot); },
+      tick: function(){}
+    });
+
+    // ---- Corner glass shower (north-east), hinged door ----
+    var sx0 = x0+2.2, sx1 = x0+3.85, sz0 = z0+1.3, sz1 = z0+2.275, sCZ = (sz0+sz1)/2;
+    box(sx1-sx0, 1.9, 0.04, glassMat, (sx0+sx1)/2, 0.95, sz0, scene); // fixed panel
+    box(sx1-sx0, 0.05, 0.04, chromeMat2, (sx0+sx1)/2, 1.9, sz0, scene); // top rail
+    var drain = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.005, 16), drainMat);
+    drain.position.set((sx0+sx1)/2, 0.006, sCZ);
+    scene.add(drain);
+    box(0.04, 0.35, 0.04, chromeMat2, sx1-0.06, 1.95, sCZ, scene); // riser stub
+    var showerArm = box(0.03, 0.03, 0.22, chromeMat2, sx1-0.15, 2.05, sz1-0.02, scene);
+    var showerHead = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 20), chromeMat2);
+    showerHead.rotation.x = Math.PI/2;
+    showerHead.position.set(sx1-0.26, 2.0, sz1-0.02);
+    scene.add(showerHead);
+
+    // Hinged at the south (sz0) edge, swinging outward (away from the
+    // stall, into the open bathroom floor) — a real door, not a slider.
+    var doorZ0 = sz0+0.02, doorZ1 = sz1-0.02, doorLen = doorZ1-doorZ0;
+    var showerDoorPivot = new THREE.Group();
+    showerDoorPivot.position.set(sx0, 0.95, doorZ0);
+    var showerDoor = box(0.04, 1.9, doorLen, glassMat, 0, 0, doorLen/2, showerDoorPivot);
+    var showerHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.22, 0.02), chromeMat2);
+    showerHandle.position.set(0.03, 0, doorLen-0.1);
+    showerDoor.add(showerHandle);
+    scene.add(showerDoorPivot);
+    showerDoorPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.3, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=sx0-0.15 && px<=sx0+0.2 && pz>=sz0 && pz<=sz1; },
+      toggle: function(){ kToggleGlobal(showerDoorPivot); },
+      tick: function(){}
+    });
+
+    // Retained for callers still expecting a bounding-box return.
+    return { x0:x0, x1:r.x1, z0:z0, z1:r.z1 };
+  }
+  var kToggleTweens = [];
+  function kToggleGlobal(obj){
+    var d = obj.userData;
+    d.isOpen = !d.isOpen;
+    var cur = d.mode === 'rotate' ? obj.rotation[d.axis] : obj.position[d.axis];
+    var to = d.isOpen ? d.openValue : d.closedValue;
+    kToggleTweens = kToggleTweens.filter(function(t){ return t.obj !== obj; });
+    kToggleTweens.push({ obj:obj, mode:d.mode, axis:d.axis, from:cur, to:to, start:performance.now(), duration:420 });
+  }
+  kitchenTickers.push(function(){
+    if (!kToggleTweens.length) return;
+    var now = performance.now();
+    kToggleTweens = kToggleTweens.filter(function(t){
+      var p = Math.min(1, (now-t.start)/t.duration);
+      var eased = 1 - Math.pow(1-p, 3);
+      var val = t.from + (t.to-t.from)*eased;
+      if (t.mode === 'rotate') t.obj.rotation[t.axis] = val; else t.obj.position[t.axis] = val;
+      return p < 1;
+    });
+  });
+
+  // Realistic, interactive lift car: enclosed shaft on 3 sides, a real
+  // door opening (with header) on the east side facing the lobby, two
+  // sliding stainless doors that part on click, plus interior details
+  // (mirror, ceiling light, handrail, control panel) and exterior call
+  // button + floor indicator.
+  function buildLiftShaft(r){
+    var w = 1.5, d = 1.6, doorW = 1.0, doorH = 2.1;
+    var x0 = r.x0+0.2, z0 = r.z0+0.2;
+    var g = new THREE.Group();
+    var dz0 = d/2 - doorW/2, dz1 = d/2 + doorW/2;
+
+    var carMetalMat = new THREE.MeshStandardMaterial({ color:'#C9CCD1', roughness:0.35, metalness:0.75 });
+    var carFloorMat = new THREE.MeshStandardMaterial({ color:'#3B3B3E', roughness:0.4 });
+    var doorMat = new THREE.MeshStandardMaterial({ color:'#B7BABF', roughness:0.3, metalness:0.8 });
+    var mirrorMat = new THREE.MeshStandardMaterial({ color:'#D8DEE2', roughness:0.08, metalness:0.6 });
+    var lightMat = new THREE.MeshStandardMaterial({ color:'#FFF8E8', emissive:'#FFF3D0', emissiveIntensity:0.5 });
+    var indicatorMat = new THREE.MeshStandardMaterial({ color:'#2B2B2E', emissive:'#E0A040', emissiveIntensity:0.4 });
+
+    // Fixed shaft walls: front, back, west (left); east is the door face.
+    box(w, WALL_H, WALL_T, wallMat, w/2, WALL_H/2, 0, g);
+    box(w, WALL_H, WALL_T, wallMat, w/2, WALL_H/2, d, g);
+    box(WALL_T, WALL_H, d, wallMat, 0, WALL_H/2, d/2, g);
+    // East wall split around the door gap, plus a header above the door.
+    if (dz0 > 0) box(WALL_T, WALL_H, dz0, doorMat, w, WALL_H/2, dz0/2, g);
+    if (d-dz1 > 0) box(WALL_T, WALL_H, d-dz1, doorMat, w, WALL_H/2, dz1+(d-dz1)/2, g);
+    box(WALL_T, WALL_H-doorH, doorW, doorMat, w, doorH+(WALL_H-doorH)/2, d/2, g);
+
+    // Car interior: floor, back mirror, ceiling light, handrail, controls.
+    box(w-0.1, 0.02, d-0.1, carFloorMat, w/2, 0.01, d/2, g);
+    box(w-0.3, doorH-0.3, 0.02, mirrorMat, w/2, (doorH-0.3)/2+0.05, d-WALL_T-0.015, g);
+    box(w-0.3, 0.03, d-0.3, lightMat, w/2, WALL_H-0.06, d/2, g);
+    box(w-0.5, 0.03, 0.03, carMetalMat, w/2, 0.95, d-WALL_T-0.03, g);
+    box(0.1, 0.5, 0.25, carMetalMat, WALL_T+0.06, 1.1, dz1+0.15, g);
+
+    // Exterior, beside the door: call-button plate + floor indicator.
+    box(0.06, 0.16, 0.1, carMetalMat, w+0.03, 1.2, dz1+0.12, g);
+    box(0.03, 0.1, 0.24, indicatorMat, w+0.015, doorH+0.18, d/2, g);
+
+    // Two sliding doors, meeting at the door's center line when closed.
+    var closedLeftZ = d/2-doorW/4, closedRightZ = d/2+doorW/4;
+    var openLeftZ = dz0+doorW/4*0.15, openRightZ = dz1-doorW/4*0.15;
+    // Panel's wide face runs along Z (the door wall's own run direction),
+    // thin along X (matching wall thickness) — box(w,h,d) takes w as the
+    // X-extent, so the wide dimension goes in the *d* (depth/Z) slot here.
+    var leftPanel = box(0.04, doorH, doorW/2-0.01, doorMat, w-0.03, doorH/2, closedLeftZ, g);
+    var rightPanel = box(0.04, doorH, doorW/2-0.01, doorMat, w-0.03, doorH/2, closedRightZ, g);
+    [leftPanel, rightPanel].forEach(function(p){
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.4,0.02), carMetalMat);
+      handle.position.set(-0.03, 0, (p===leftPanel? (doorW/2-0.01)/2-0.05 : -((doorW/2-0.01)/2-0.05)));
+      p.add(handle);
+    });
+
+    g.position.set(x0, 0, z0);
+    scene.add(g);
+
+    var state = { isOpen:false, t:0, target:0 };
+    liftRig = {
+      hitTest: function(px, pz){
+        var wx = x0+w, wz0 = z0+dz0, wz1 = z0+dz1;
+        return px >= wx-0.35 && px <= wx+0.25 && pz >= wz0-0.15 && pz <= wz1+0.15;
+      },
+      toggle: function(){ state.isOpen = !state.isOpen; state.target = state.isOpen ? 1 : 0; },
+      tick: function(){
+        state.t += (state.target-state.t)*0.09;
+        leftPanel.position.z = closedLeftZ + (openLeftZ-closedLeftZ)*state.t;
+        rightPanel.position.z = closedRightZ + (openRightZ-closedRightZ)*state.t;
+        indicatorMat.emissiveIntensity = 0.4 + state.t*0.3;
+      }
+    };
+    return { x0:x0, x1:x0+w, z0:z0, z1:z0+d };
+  }
+
+  var stepMat = new THREE.MeshStandardMaterial({ color:'#C7C2B5', roughness:0.7 });
+
+  // A flight of steps in local space: (0,0) at the base-front corner,
+  // rising along +Z, each step's top at baseY + stepH*(i+1).
+  // Steps run along +X (each one deeper in X, spanning stepW in Z) so the
+  // flight rises heading east, toward the lobby-facing edge of the core.
+  function buildStairFlight(steps, stepD, stepW, stepH, baseY, x0, z0){
+    var g = new THREE.Group();
+    for (var i=0;i<steps;i++){
+      var h = stepH*(i+1);
+      box(stepD, h, stepW, stepMat, stepD*i + stepD/2, baseY + h/2, stepW/2, g);
+    }
+    g.position.set(x0, 0, z0);
+    scene.add(g);
+    return baseY + stepH*steps;
+  }
+
+  // Two parallel flights (offset in Z, same X run) rising to a shared
+  // landing at the east end, right where the core opens onto the lobby —
+  // kept entirely inside coreRect so it never pokes through a wall, and
+  // the guard rail runs lengthwise (along X) so it doesn't block the
+  // lobby-facing sightline the way a cross-wise rail would.
+  function buildStaircase(coreRect, liftBox){
+    var stepH = 0.22, stepD = 0.22, steps = 5, gap = 0.15, margin = 0.05;
+    // Start north of the lift's own footprint (not just east of it) so the
+    // flight doesn't sit directly in front of the lift door — there's a
+    // clear walkway out of the lift before you reach the first step.
+    var zStart = liftBox.z1 + 0.15;
+    var laneW = (coreRect.z1 - zStart - margin - gap) / 2;
+    var laneA_z0 = zStart;
+    var laneB_z0 = laneA_z0 + laneW + gap;
+    var x0 = coreRect.x0 + margin;
+    var topY = buildStairFlight(steps, stepD, laneW, stepH, 0, x0, laneA_z0);
+    buildStairFlight(steps, stepD, laneW, stepH, topY, x0, laneB_z0);
+    var landingX0 = x0 + steps*stepD;
+    var landingDepth = Math.max(0.2, coreRect.x1 - landingX0 - 0.05);
+    var laneSpan = (laneB_z0 + laneW) - laneA_z0;
+    box(landingDepth, 0.1, laneSpan, stepMat, landingX0 + landingDepth/2, topY, laneA_z0 + laneSpan/2, scene);
+    box(steps*stepD, 0.9, 0.05, railMat, x0 + steps*stepD/2, 0.9, laneA_z0 + laneW + gap/2, scene);
+  }
+
+  // A framed glass sliding window, flush with a wall running along Z=z.
+  // Pass interactive:true to make it click-to-slide (registers in
+  // slidingWindowRigs, driven by tickSlidingWindows() each frame).
+  var slidingWindowRigs = [];
+  function buildSlidingWindow(xCenter, z, width, sillY, height, interactive){
+    var g = new THREE.Group();
+    // Same chrome-framed glass treatment as the bathroom shower, so the
+    // two read as one consistent material language.
+    var frameMat = new THREE.MeshStandardMaterial({ color:'#C9CCD1', roughness:0.2, metalness:0.85 });
+    // A real hollow frame (four thin border bars), not a solid slab —
+    // a full-size backing plate behind the glass was killing the
+    // see-through look no matter how transparent the pane material was.
+    var frameT = 0.06, topY = sillY+height, botY = sillY, midY = sillY+height/2;
+    box(width, frameT, 0.06, frameMat, 0, topY-frameT/2, 0, g);
+    box(width, frameT, 0.06, frameMat, 0, botY+frameT/2, 0, g);
+    box(frameT, height, 0.06, frameMat, -width/2+frameT/2, midY, 0, g);
+    box(frameT, height, 0.06, frameMat, width/2-frameT/2, midY, 0, g);
+    box(width-frameT*2, height-frameT*2, 0.04, glassMat, 0, midY, 0.01, g);
+    box(0.03, height-frameT*2, 0.05, frameMat, 0, midY, 0.015, g);
+    g.position.set(xCenter, 0, z);
+    scene.add(g);
+    if (interactive){
+      var closedX = xCenter, openX = xCenter + width*0.72;
+      var closedZ = z, openZ = z + 0.05; // nudge onto a second track when open
+      var state = { x: closedX, target: closedX, isOpen: false };
+      slidingWindowRigs.push({
+        // Hit-test against the panel's actual current footprint (not a
+        // fixed region) so an open panel's clickable area moves with it
+        // instead of statically overlapping its neighbors.
+        hitTest: function(px, pz){
+          return px >= g.position.x-width/2-0.03 && px <= g.position.x+width/2+0.03 &&
+                 pz >= z-0.35 && pz <= z+0.35;
+        },
+        toggle: function(){
+          state.isOpen = !state.isOpen;
+          state.target = state.isOpen ? openX : closedX;
+        },
+        tick: function(){
+          state.x += (state.target-state.x)*0.12;
+          g.position.x = state.x;
+          var progress = clamp((state.x-closedX)/(openX-closedX), 0, 1);
+          g.position.z = closedZ + (openZ-closedZ)*progress;
+        }
+      });
+    }
+    return g;
+  }
+  function tickSlidingWindows(){
+    for (var i=0;i<slidingWindowRigs.length;i++) slidingWindowRigs[i].tick();
+  }
+
+  // A curtain rod + two gathered panels over a window/door opening,
+  // hung on the room-interior face. Click anywhere on the curtain to
+  // slide both panels open (bunched back near the rod ends) or closed
+  // (meeting in the middle, covering the opening).
+  var curtainMat = new THREE.MeshStandardMaterial({ color:'#D8CBB0', roughness:0.85, side: THREE.DoubleSide });
+  var curtainRodMat = new THREE.MeshStandardMaterial({ color:'#6B5A42', roughness:0.4, metalness:0.3 });
+  var curtainRigs = [];
+  function buildCurtain(xCenter, z, width, sillY, height, roomSign){
+    var g = new THREE.Group();
+    var rodY = sillY+height+0.14;
+    var rodHalfW = width/2 + 0.18;
+    var rod = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, rodHalfW*2, 10), curtainRodMat);
+    rod.rotation.z = Math.PI/2;
+    rod.position.set(0, rodY, 0);
+    g.add(rod);
+    [-1,1].forEach(function(s){
+      var finial = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), curtainRodMat);
+      finial.position.set(s*rodHalfW, rodY, 0);
+      g.add(finial);
+    });
+
+    var panelH = height+0.08, panelTopY = rodY-0.03, panelW = rodHalfW;
+    function makePanel(sign){
+      var pg = new THREE.Group();
+      var segs = 5, segW = panelW/segs;
+      for (var i=0;i<segs;i++){
+        var depthOff = (i%2===0) ? 0.012 : -0.012;
+        box(segW-0.006, panelH, 0.02, curtainMat, sign*(i*segW+segW/2), panelTopY-panelH/2, depthOff, pg);
+      }
+      return pg;
+    }
+    var leftPanel = makePanel(-1), rightPanel = makePanel(1);
+    g.add(leftPanel); g.add(rightPanel);
+    g.position.set(xCenter, 0, z + roomSign*0.09);
+    scene.add(g);
+
+    var state = { t: 0, target: 0, isOpen: false };
+    var openShift = panelW*0.68, openScale = 0.3;
+    curtainRigs.push({
+      hitTest: function(px,pz){
+        return px>=xCenter-rodHalfW-0.05 && px<=xCenter+rodHalfW+0.05 &&
+               pz>=z+roomSign*0.02 && pz<=z+roomSign*0.25;
+      },
+      toggle: function(){ state.isOpen = !state.isOpen; state.target = state.isOpen ? 1 : 0; }
+    });
+    kitchenTickers.push(function(){
+      state.t += (state.target-state.t)*0.1;
+      leftPanel.position.x = -openShift*state.t;
+      rightPanel.position.x = openShift*state.t;
+      var s = 1 - state.t*(1-openScale);
+      leftPanel.scale.x = s;
+      rightPanel.scale.x = s;
+    });
+  }
+
+  function buildBalcony(rect, doorSide){
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(rect.x1-rect.x0, rect.z1-rect.z0), stoneFloorMat);
+    mesh.rotation.x = -Math.PI/2;
+    mesh.position.set((rect.x0+rect.x1)/2, 0.01, (rect.z0+rect.z1)/2);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    var railH = 1.0, t = 0.05;
+    var outerZ = doorSide === 'S' ? rect.z0 : rect.z1;
+    var rail = new THREE.Mesh(new THREE.BoxGeometry(rect.x1-rect.x0, railH, t), glassMat);
+    rail.position.set((rect.x0+rect.x1)/2, railH/2, outerZ);
+    scene.add(rail);
+    var railL = new THREE.Mesh(new THREE.BoxGeometry(t, railH, rect.z1-rect.z0), glassMat);
+    railL.position.set(rect.x0, railH/2, (rect.z0+rect.z1)/2);
+    scene.add(railL);
+    var railR = railL.clone();
+    railR.position.x = rect.x1;
+    scene.add(railR);
+  }
+
+  // =================================================================
+  // Assemble the floor
+  // =================================================================
+  // Base floor under the whole building footprint, so any gap between
+  // room floor patches (corridors, the sofa nook, etc.) still reads as
+  // wood instead of bare background.
+  (function(){
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(BUILDING.x1 - BUILDING.x0, BUILDING.z1 - BUILDING.z0), woodFloorMat);
+    mesh.rotation.x = -Math.PI/2;
+    mesh.position.set((BUILDING.x0+BUILDING.x1)/2, 0.005, (BUILDING.z0+BUILDING.z1)/2);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+  })();
+  ROOMS.forEach(function(r){
+    buildRoomFloor(r);
+    buildRoomWalls(r);
+    if (!r.label) return;
+    var lbl = makeFloorLabel(r.label, r.sub, Math.min(rw(r)*0.8, 2.6));
+    lbl.position.set(cx(r), 0.02, cz(r));
+    scene.add(lbl);
+  });
+
+  buildBed(ROOMS[0]);
+  (function(){
+    // Bedroom's south wall faces the ground-floor balcony (BOTTOM_BALCONY
+    // sits just past r.z0) — glaze the whole wall: small windows in the two
+    // leftover stubs beside the door gap, and a full-height, floor-to-
+    // ceiling sliding glass door filling the wide door gap itself (which
+    // buildRoomWalls only ever leaves as a bare opening, no glass of its
+    // own).
+    var bedroom = ROOMS[0];
+    var door = bedroom.doors.S;
+    var doorCenterX = bedroom.x0 + rw(bedroom) * door.at;
+    var doorX0 = doorCenterX - door.width/2, doorX1 = doorCenterX + door.width/2;
+    var leftSegCenter = (bedroom.x0 + doorX0) / 2;
+    var rightSegCenter = (doorX1 + bedroom.x1) / 2;
+    buildSlidingWindow(leftSegCenter, bedroom.z0, 0.55, 0.9, 1.2, true);
+    buildSlidingWindow(rightSegCenter, bedroom.z0, 0.55, 0.9, 1.2, true);
+    var doorPanelCount = 3, panelW = door.width / doorPanelCount;
+    for (var i=0;i<doorPanelCount;i++){
+      buildSlidingWindow(doorX0 + panelW*(i+0.5), bedroom.z0, panelW-0.03, 0.02, 2.1, true);
+    }
+    // Curtains on the interior face — one over each small window, and one
+    // continuous track spanning the whole sliding door opening. Click to
+    // slide them open/closed.
+    buildCurtain(leftSegCenter, bedroom.z0, 0.55, 0.9, 1.2, 1);
+    buildCurtain(rightSegCenter, bedroom.z0, 0.55, 0.9, 1.2, 1);
+    buildCurtain(doorCenterX, bedroom.z0, door.width, 0.02, 2.1, 1);
+  })();
+  (function(){
+    // Realistic U-shaped sectional: segmented seat + back cushions (not
+    // one long slab), a raised base plinth on short legs, boxed armrests
+    // at both far ends of the long run, and throw pillows — same overall
+    // footprint as before (long run along the west wall, two arms
+    // wrapping east around the coffee table).
+    var legMat = new THREE.MeshStandardMaterial({ color:'#4A3B2A', roughness:0.5 });
+    var pillowAccentMat2 = new THREE.MeshStandardMaterial({ color:'#8C5333', roughness:0.8 });
+    var seatH = 0.42, backH = 0.75, gap = 0.03;
+
+    // Long run: 4 segmented seat + back cushions over z=5.4..10.6.
+    var runZ0 = 5.4, runZ1 = 10.6, runLen = runZ1-runZ0, segCount = 4;
+    var segLen = (runLen - gap*(segCount-1))/segCount;
+    box(0.82, seatH-0.08, runLen, fabricMat, 0.92, (seatH-0.08)/2, (runZ0+runZ1)/2, scene); // base plinth
+    for (var i=0;i<segCount;i++){
+      var cz = runZ0 + i*(segLen+gap) + segLen/2;
+      box(0.72, 0.14, segLen, fabricMat, 0.9, seatH+0.03, cz, scene);
+      box(0.16, backH, segLen, fabricMat, 0.48, backH/2, cz, scene);
+    }
+    [runZ0+0.2, runZ1-0.2].forEach(function(lz){
+      box(0.04, seatH-0.1, 0.04, legMat, 0.7, (seatH-0.1)/2, lz, scene);
+      box(0.04, seatH-0.1, 0.04, legMat, 1.1, (seatH-0.1)/2, lz, scene);
+    });
+
+    // North + south arms (each 1.8 wide x 0.7 deep), with a raised,
+    // rolled armrest capping the outer (east) end.
+    [ { backZ:5.475, seatZ:5.9, armZ:5.475-0.35-0.15 },
+      { backZ:10.525, seatZ:10.1, armZ:10.525+0.35+0.15 } ].forEach(function(a){
+      box(0.82, seatH-0.08, 0.72, fabricMat, 1.8, (seatH-0.08)/2, a.seatZ, scene); // base plinth
+      box(1.6, 0.14, 0.72, fabricMat, 1.75, seatH+0.03, a.seatZ, scene); // seat cushion
+      box(1.6, backH, 0.16, fabricMat, 1.75, backH/2, a.backZ, scene); // back cushion
+      box(0.24, 0.6, 0.72, fabricMat, 2.68, 0.3, a.seatZ, scene); // rolled armrest
+      box(0.04, seatH-0.1, 0.04, legMat, 1.0, (seatH-0.1)/2, a.seatZ, scene);
+      box(0.04, seatH-0.1, 0.04, legMat, 2.5, (seatH-0.1)/2, a.seatZ, scene);
+    });
+    // Throw pillows in the corners where the arms meet the long run.
+    [[0.9,5.9],[0.9,10.1]].forEach(function(p){
+      var pillow = box(0.32, 0.3, 0.32, pillowAccentMat2, p[0], 0.62, p[1], scene);
+      pillow.rotation.y = Math.PI/4;
+    });
+
+    // Coffee table: thin top + slim legs (in place of the old solid
+    // block), same footprint, with a small stack of books for styling.
+    box(0.9, 0.04, 1.4, woodMat, 1.8, 0.4, 8.0, scene);
+    [[-0.4,-0.65],[0.4,-0.65],[-0.4,0.65],[0.4,0.65]].forEach(function(o){
+      box(0.04, 0.38, 0.04, legMat, 1.8+o[0], 0.19, 8.0+o[1], scene);
+    });
+    box(0.3, 0.03, 0.22, pillowAccentMat2, 1.65, 0.435, 7.7, scene);
+    box(0.26, 0.03, 0.19, whiteMat, 1.65, 0.465, 7.7, scene);
+
+    // Bigger ceiling-hung TV, grouped so the whole assembly can swivel —
+    // click it to rotate on its mount.
+    var tvGroup = new THREE.Group();
+    tvGroup.position.set(3.2, 2.68, 8.0);
+    scene.add(tvGroup);
+    box(0.06, 0.1, 0.06, darkMat, 0, -0.05, 0, tvGroup);
+    box(0.07, 0.72, 0.07, darkMat, 0, -0.46, 0, tvGroup);
+    box(0.05, 0.95, 1.75, darkMat, 0, -0.83, 0, tvGroup);
+    box(0.015, 0.87, 1.67, new THREE.MeshStandardMaterial({ color:'#12151C', roughness:0.15, metalness:0.4 }), -0.03, -0.83, 0, tvGroup);
+    var tvAngle = 0, tvTarget = 0, tvSwiveled = false;
+    kitchenTickers.push(function(){
+      tvAngle += (tvTarget-tvAngle) * 0.08;
+      tvGroup.rotation.y = tvAngle;
+    });
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=2.3 && px<=3.35 && pz>=7.1 && pz<=8.9; },
+      toggle: function(){ tvSwiveled = !tvSwiveled; tvTarget = tvSwiveled ? 0.6 : 0; },
+      tick: function(){}
+    });
+  })();
+  buildWC(ROOMS[9]);
+  (function(){
+    // Real door panels in the two gaps the room layout already left for
+    // them (ROOMS[0].doors.N and ROOMS[9].doors.W) — no new openings cut,
+    // just hinged, interactive doors filling the existing spaces.
+    var bedroom = ROOMS[0], bathroom = ROOMS[9];
+
+    // Bedroom's north (hallway) door — hinged at the west edge of the
+    // gap, swinging away from the bed into the hallway.
+    var bnDoor = bedroom.doors.N;
+    var bnCenterX = bedroom.x0 + rw(bedroom) * bnDoor.at;
+    var bnX0 = bnCenterX - bnDoor.width/2, bnX1 = bnCenterX + bnDoor.width/2;
+    var bnPivot = new THREE.Group();
+    bnPivot.position.set(bnX0, 1.025, bedroom.z1);
+    var bnDoorMesh = box(bnX1-bnX0-0.02, 2.05, 0.04, woodMat, (bnX1-bnX0-0.02)/2, 0, 0, bnPivot);
+    var bnHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.18, 0.02), darkMat);
+    bnHandle.position.set((bnX1-bnX0)-0.14, 0, 0.03);
+    bnDoorMesh.add(bnHandle);
+    scene.add(bnPivot);
+    bnPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.3, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=bnX0-0.1 && px<=bnX1+0.1 && pz>=bedroom.z1-0.3 && pz<=bedroom.z1+0.3; },
+      toggle: function(){ kToggleGlobal(bnPivot); },
+      tick: function(){}
+    });
+
+    // Bathroom's west door — hinged at the south edge of the gap,
+    // swinging outward into the corridor (clear of the vanity/basin just
+    // inside).
+    var bwDoor = bathroom.doors.W;
+    var bwCenterZ = bathroom.z0 + rd(bathroom) * bwDoor.at;
+    var bwZ0 = bwCenterZ - bwDoor.width/2, bwZ1 = bwCenterZ + bwDoor.width/2;
+    var bwPivot = new THREE.Group();
+    bwPivot.position.set(bathroom.x0, 1.025, bwZ0);
+    var bwDoorMesh = box(0.04, 2.05, bwZ1-bwZ0-0.02, woodMat, 0, 0, (bwZ1-bwZ0-0.02)/2, bwPivot);
+    var bwHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.18, 0.02), darkMat);
+    bwHandle.position.set(0.03, 0, (bwZ1-bwZ0)-0.14);
+    bwDoorMesh.add(bwHandle);
+    scene.add(bwPivot);
+    bwPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.3, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=bathroom.x0-0.3 && px<=bathroom.x0+0.3 && pz>=bwZ0-0.1 && pz<=bwZ1+0.1; },
+      toggle: function(){ kToggleGlobal(bwPivot); },
+      tick: function(){}
+    });
+  })();
+  (function(){
+    // Open kitchen: counter run pushed to the far (east) wall, away from
+    // the sofa, + an island, open on every other side toward the rest of
+    // the floor.
+    var r = ROOMS[8];
+    var counterMat = new THREE.MeshStandardMaterial({ color:'#F4F2ED', roughness:0.3 });
+    var cabinetMat = new THREE.MeshStandardMaterial({ color:'#2B2B2E', roughness:0.4 });
+    box(0.7, 0.85, 2.85, cabinetMat, r.x1-0.35, 0.425, 13.475, scene);
+    box(0.75, 0.06, 2.95, counterMat, r.x1-0.35, 0.88, 13.475, scene);
+    // Second slab (island), flush against the wall's edge.
+    box(1.0, 0.85, 3.95, cabinetMat, 8.5, 0.425, 12.575, scene);
+    box(1.1, 0.06, 4.05, counterMat, 8.5, 0.88, 12.575, scene);
+    // Fridge + pantry moved onto the same east wall as the counter run
+    // (the wall pointed at), continuing the line south toward the
+    // bathroom corner. Both are open-front shells (not solid boxes) with
+    // a hinged door, so opening them actually reveals the shelves inside.
+    var fridgeStainlessMat = new THREE.MeshStandardMaterial({ color:'#D7D9DC', roughness:0.3, metalness:0.6 });
+    var applianceInteriorMat = new THREE.MeshStandardMaterial({ color:'#F5F5F2', roughness:0.6 });
+    function buildApplianceShell(cx, cy, cz, depthX, heightY, widthZ, mat, shelfCount){
+      box(0.02, heightY, widthZ, mat, cx+depthX/2-0.01, cy, cz, scene); // back
+      box(depthX, heightY, 0.02, mat, cx, cy, cz-widthZ/2+0.01, scene); // side
+      box(depthX, heightY, 0.02, mat, cx, cy, cz+widthZ/2-0.01, scene); // side
+      box(depthX, 0.02, widthZ, mat, cx, cy+heightY/2, cz, scene); // top
+      box(depthX, 0.02, widthZ, mat, cx, cy-heightY/2, cz, scene); // bottom
+      for (var s=1; s<=shelfCount; s++){
+        var sy = cy - heightY/2 + (heightY/(shelfCount+1))*s;
+        box(depthX-0.04, 0.02, widthZ-0.04, applianceInteriorMat, cx, sy, cz, scene);
+      }
+    }
+    function buildApplianceDoor(hingeX, hingeY, hingeZ, hingeSign, doorH, doorW, mat){
+      var pivot = new THREE.Group();
+      pivot.position.set(hingeX, hingeY, hingeZ);
+      var door = box(0.03, doorH, doorW-0.02, mat, 0, 0, -hingeSign*(doorW/2-0.01), pivot);
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.35, 0.02), darkMat);
+      handle.position.set(0.03, 0, -hingeSign*(doorW-0.06));
+      door.add(handle);
+      scene.add(pivot);
+      return pivot;
+    }
+    // Fridge: 0.68 deep (X) x 1.78 tall x 0.58 wide (Z), door hinged at
+    // its north (+Z) edge.
+    var fridgeCX = r.x1-0.35, fridgeCY = 0.9, fridgeCZ = 11.65;
+    var fridgeDX = 0.68, fridgeH = 1.78, fridgeWZ = 0.58;
+    buildApplianceShell(fridgeCX, fridgeCY, fridgeCZ, fridgeDX, fridgeH, fridgeWZ, fridgeStainlessMat, 3);
+    var fridgePivot = buildApplianceDoor(fridgeCX-fridgeDX/2+0.005, fridgeCY, fridgeCZ+fridgeWZ/2, 1, fridgeH-0.04, fridgeWZ, fridgeStainlessMat);
+    // Pantry: 0.68 deep x 1.98 tall x 0.58 wide, door hinged at its south
+    // (-Z) edge (opposite the fridge's, so the two doors don't collide
+    // when both are open).
+    var pantryCX = r.x1-0.35, pantryCY = 1.0, pantryCZ = 10.95;
+    var pantryDX = 0.68, pantryH = 1.98, pantryWZ = 0.58;
+    buildApplianceShell(pantryCX, pantryCY, pantryCZ, pantryDX, pantryH, pantryWZ, cabinetMat, 4);
+    var pantryPivot = buildApplianceDoor(pantryCX-pantryDX/2+0.005, pantryCY, pantryCZ-pantryWZ/2, -1, pantryH-0.04, pantryWZ, cabinetMat);
+    // L-shaped extension off the counter's far (north) end — the opposite
+    // side from the fridge/pantry — turning the run to head west, clear
+    // of the island.
+    box(1.4, 0.85, 1.185, cabinetMat, 10.235, 0.425, 15.1925, scene);
+    box(1.5, 0.06, 1.285, counterMat, 10.235, 0.88, 15.1925, scene);
+    // Upper cabinets, wall-mounted above the counter runs with a clear
+    // gap over the countertop for a backsplash/worktop.
+    box(0.35, 0.7, 2.85, cabinetMat, r.x1 - 0.175, 1.8, 13.475, scene);
+    box(1.4, 0.7, 0.35, cabinetMat, 10.235, 1.8, 15.785 - 0.175, scene);
+    // Realistic pooja mandir, flush against the east wall in the corridor
+    // south of the fridge/pantry wall: storage cabinet with a working
+    // door, a marble altar platform, pillars, a stepped gold canopy, and
+    // an idol alcove with its own small door — plus a diya that lights
+    // up on click.
+    var goldMat = new THREE.MeshStandardMaterial({ color:'#D8B978', roughness:0.4, metalness:0.3 });
+    var marbleMat = new THREE.MeshStandardMaterial({ color:'#F2EEE4', roughness:0.25, metalness:0.05 });
+    var idolMat = new THREE.MeshStandardMaterial({ color:'#E8D9A0', roughness:0.4, metalness:0.5 });
+    var flameMat = new THREE.MeshStandardMaterial({ color:'#3A2A10', emissive:'#000000', emissiveIntensity:0 });
+    var brassMat = new THREE.MeshStandardMaterial({ color:'#B08D57', roughness:0.3, metalness:0.7 });
+    var poojaCX = r.x1 - 0.225, poojaCZ = 9.95;
+
+    box(0.45, 0.85, 1.0, woodMat, poojaCX, 0.425, poojaCZ, scene);
+    box(0.5, 0.04, 1.05, marbleMat, poojaCX, 0.87, poojaCZ, scene);
+    box(0.04, 0.66, 1.0, goldMat, r.x1-0.02, 1.22, poojaCZ, scene);
+    [-0.42, 0.42].forEach(function(dz){
+      var pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.66, 12), idolMat);
+      pillar.position.set(poojaCX-0.16, 1.22, poojaCZ+dz);
+      pillar.castShadow = true;
+      scene.add(pillar);
+    });
+    [-0.15, 0.15].forEach(function(dz){
+      var idol = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 10), idolMat);
+      idol.position.set(poojaCX+0.05, 1.0, poojaCZ+dz);
+      idol.castShadow = true;
+      scene.add(idol);
+    });
+    var diyaBase = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.03, 12), idolMat);
+    diyaBase.position.set(poojaCX-0.15, 0.905, poojaCZ);
+    scene.add(diyaBase);
+    var flame = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.045, 8), flameMat);
+    flame.position.set(poojaCX-0.15, 0.94, poojaCZ);
+    scene.add(flame);
+    // Diya click-to-light — registered ahead of the two doors below so a
+    // precise click on this small target isn't swallowed by their wider
+    // (and here, slightly overlapping) hit regions.
+    var diyaLit = false;
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=poojaCX-0.24 && px<=poojaCX-0.06 && pz>=poojaCZ-0.12 && pz<=poojaCZ+0.12; },
+      toggle: function(){
+        diyaLit = !diyaLit;
+        flameMat.emissive.set(diyaLit ? '#FF8C1A' : '#000000');
+        flameMat.emissiveIntensity = diyaLit ? 1.0 : 0;
+        flameMat.color.set(diyaLit ? '#FFD27A' : '#3A2A10');
+      },
+      tick: function(){}
+    });
+    box(0.005, 0.12, 0.005, darkMat, poojaCX-0.2, 1.48, poojaCZ, scene);
+    var bell = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.05, 10), idolMat);
+    bell.position.set(poojaCX-0.2, 1.4, poojaCZ);
+    bell.rotation.x = Math.PI;
+    bell.castShadow = true;
+    scene.add(bell);
+    box(0.5, 0.06, 1.05, goldMat, poojaCX, 1.58, poojaCZ, scene);
+    box(0.4, 0.12, 0.85, goldMat, poojaCX, 1.67, poojaCZ, scene);
+    box(0.25, 0.12, 0.55, goldMat, poojaCX, 1.79, poojaCZ, scene);
+    box(0.08, 0.15, 0.08, goldMat, poojaCX, 1.92, poojaCZ, scene);
+
+    // Interactive: storage-cabinet door, idol-alcove door, and the diya
+    // (click to light it). Each door's own X band is kept clear of the
+    // others' so a click can't be swallowed by the wrong one.
+    var cabDoorPivot = new THREE.Group();
+    cabDoorPivot.position.set(poojaCX-0.245, 0.42, 9.5);
+    var cabDoor = box(0.03, 0.6, 0.86, woodMat, 0, 0, 0.44, cabDoorPivot);
+    var cabHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.14, 0.02), brassMat);
+    cabHandle.position.set(0.025, 0, 0.78);
+    cabDoor.add(cabHandle);
+    scene.add(cabDoorPivot);
+    cabDoorPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.3, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=poojaCX-0.38 && px<=poojaCX-0.10 && pz>=9.5 && pz<=10.4; },
+      toggle: function(){ kToggle(cabDoorPivot); },
+      tick: function(){}
+    });
+
+    var mandirDoorPivot = new THREE.Group();
+    mandirDoorPivot.position.set(poojaCX+0.02, 1.19, 9.6);
+    var mandirDoor = box(0.02, 0.5, 0.66, goldMat, 0, 0, 0.33, mandirDoorPivot);
+    var mandirHandle = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.1, 0.015), brassMat);
+    mandirHandle.position.set(0.018, 0, 0.6);
+    mandirDoor.add(mandirHandle);
+    scene.add(mandirDoorPivot);
+    mandirDoorPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.4, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=poojaCX-0.05 && px<=poojaCX+0.20 && pz>=9.5 && pz<=10.4; },
+      toggle: function(){ kToggle(mandirDoorPivot); },
+      tick: function(){}
+    });
+
+    // Partition wall closing off the south side of the pooja nook —
+    // together with the east wall and the fridge/pantry wall to its
+    // north, it screens the unit on three sides, open only to the west.
+    addWallSeg(9.6, r.x1, 9.3, 9.4, wallMat);
+    // Long wall capping the south end of the fridge/pantry run — runs
+    // alongside them, not across their open (west-facing) front.
+    addWallSeg(8.0, r.x1, 10.5, 10.6, wallMat);
+
+    // Interactive glass-front crockery unit, along the same east-wall
+    // corridor as the pooja mandir (just south of its partition wall, in
+    // the open stretch between the mandir and the bathroom corridor) —
+    // a tall wood cabinet with a hinged glass door, lit shelves stocked
+    // with plates, bowls and cups, and a gold cornice matching the
+    // mandir's finish.
+    (function(){
+      var crockeryCabMat = new THREE.MeshStandardMaterial({ color:'#6B4A2E', roughness:0.45 });
+      var crockeryShelfLightMat = new THREE.MeshStandardMaterial({ color:'#FFF4DC', emissive:'#000000', emissiveIntensity:0 });
+      var plateMat2 = new THREE.MeshStandardMaterial({ color:'#F7F3E8', roughness:0.2, metalness:0.05 });
+      var plateRimMat = new THREE.MeshStandardMaterial({ color:'#B08D57', roughness:0.3, metalness:0.6 });
+      var bowlMat = new THREE.MeshStandardMaterial({ color:'#3B6E8F', roughness:0.3, metalness:0.1 });
+      var cupMat = new THREE.MeshStandardMaterial({ color:'#8F5A7A', roughness:0.3, metalness:0.1 });
+
+      var ux = r.x1-0.25, uz0 = 7.65, uz1 = 9.25, uCZ = (uz0+uz1)/2, uWZ = uz1-uz0, uH = 2.05, uDepth = 0.5;
+
+      // Shell: back, two sides, top, bottom + three shelves.
+      box(0.02, uH, uWZ, crockeryCabMat, ux+uDepth/2-0.01, uH/2, uCZ, scene);
+      box(uDepth, uH, 0.02, crockeryCabMat, ux, uH/2, uz0+0.01, scene);
+      box(uDepth, uH, 0.02, crockeryCabMat, ux, uH/2, uz1-0.01, scene);
+      box(uDepth, 0.03, uWZ, crockeryCabMat, ux, uH, uCZ, scene);
+      box(uDepth, 0.03, uWZ, crockeryCabMat, ux, 0, uCZ, scene);
+      var shelfYs = [0.5, 1.0, 1.5];
+      shelfYs.forEach(function(sy){
+        box(uDepth-0.02, 0.02, uWZ-0.02, crockeryCabMat, ux, sy, uCZ, scene);
+      });
+      // Warm LED strip under the top panel, lighting the top shelf.
+      box(uDepth-0.06, 0.01, uWZ-0.06, crockeryShelfLightMat, ux, uH-0.06, uCZ, scene);
+
+      // Crockery on every shelf level: a stack of plates, a serving bowl,
+      // and a pair of cups.
+      [0.03, shelfYs[0], shelfYs[1], shelfYs[2]].forEach(function(baseY){
+        var stackZ = uz0 + 0.3;
+        for (var s=0; s<4; s++){
+          var plate = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.015, 20), plateMat2);
+          plate.position.set(ux, baseY+0.03+s*0.02, stackZ);
+          scene.add(plate);
+        }
+        var rim = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.006, 8, 20), plateRimMat);
+        rim.rotation.x = Math.PI/2;
+        rim.position.set(ux, baseY+0.03+4*0.02, stackZ);
+        scene.add(rim);
+
+        var bowl = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 10, 0, Math.PI*2, Math.PI/2, Math.PI/2), bowlMat);
+        bowl.position.set(ux, baseY+0.03, uCZ);
+        scene.add(bowl);
+
+        [-0.16, 0.16].forEach(function(dz){
+          var cup = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, 0.06, 12), cupMat);
+          cup.position.set(ux, baseY+0.06, uz1-0.28+dz);
+          scene.add(cup);
+        });
+      });
+
+      // Two narrower hinged glass doors meeting at the middle (not one
+      // door spanning the whole 1.6m front) — a single door that wide
+      // swung an arc long enough to poke into the pooja nook next door.
+      // Each half now swings outward on its own end, cutting the swing
+      // radius roughly in half.
+      var lightOn = false;
+      [[uz0, uCZ, 1], [uCZ, uz1, -1]].forEach(function(seg){
+        var lz0 = seg[0], lz1 = seg[1], sign = seg[2], segLen = lz1-lz0;
+        var hingeZ = sign>0 ? lz0+0.01 : lz1-0.01;
+        var pivot = new THREE.Group();
+        pivot.position.set(ux-uDepth/2+0.01, uH/2, hingeZ);
+        var offsetZ = sign>0 ? (segLen/2-0.02) : -(segLen/2-0.02);
+        var doorGlass = box(0.02, uH-0.06, segLen-0.04, glassMat, 0, 0, offsetZ, pivot);
+        box(0.025, uH-0.06, 0.03, crockeryCabMat, 0, 0, sign>0 ? 0.015 : -0.015, pivot);
+        var doorHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.2, 0.02), plateRimMat);
+        doorHandle.position.set(0.03, 0, sign>0 ? (segLen-0.16) : -(segLen-0.16));
+        doorGlass.add(doorHandle);
+        scene.add(pivot);
+        pivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue: sign>0 ? -1.3 : 1.3, isOpen:false };
+        kitchenRigs.push({
+          hitTest: function(px,pz){ return px>=ux-uDepth/2-0.15 && px<=ux+uDepth/2+0.1 && pz>=lz0 && pz<=lz1; },
+          toggle: function(){
+            kToggle(pivot);
+            lightOn = !lightOn;
+            crockeryShelfLightMat.emissive.set(lightOn ? '#FFD27A' : '#000000');
+            crockeryShelfLightMat.emissiveIntensity = lightOn ? 1.0 : 0;
+          },
+          tick: function(){}
+        });
+      });
+
+      // Gold cornice on top, echoing the mandir's finish next door.
+      box(uDepth+0.06, 0.05, uWZ+0.06, goldMat, ux, uH+0.03, uCZ, scene);
+    })();
+
+    // ===============================================================
+    // Modern-kitchen pass: backsplash, sink, hob + ceiling hood (with a
+    // light toggle), pendant lights over the island, bar stools, and
+    // interactive island drawers — on top of the counter/island/fridge/
+    // pantry already built above.
+    // ===============================================================
+    var stainlessMat = new THREE.MeshStandardMaterial({ color:'#C9CCD1', roughness:0.35, metalness:0.75 });
+    var hobMat = new THREE.MeshStandardMaterial({ color:'#111214', roughness:0.15, metalness:0.3 });
+    var burnerMat = new THREE.MeshStandardMaterial({ color:'#3A3A3C', roughness:0.5, metalness:0.4 });
+    var backsplashMat = new THREE.MeshStandardMaterial({ color:'#E9E4D8', roughness:0.35, map: tileTexture('#E9E4D8') });
+    var hoodLightMat = new THREE.MeshStandardMaterial({ color:'#FFF4DC', emissive:'#000000', emissiveIntensity:0 });
+    var pendantGlassMat = new THREE.MeshStandardMaterial({ color:'#EDE7D8', roughness:0.3, metalness:0.1, emissive:'#000000', emissiveIntensity:0 });
+    var stoolSeatMat = new THREE.MeshStandardMaterial({ color:'#2B2B2E', roughness:0.5 });
+    var stoolLegMat = new THREE.MeshStandardMaterial({ color:'#B08D57', roughness:0.3, metalness:0.7 });
+
+    // Backsplash tile behind the main counter run.
+    box(0.02, 0.55, 2.85, backsplashMat, r.x1-0.01, 1.18, 13.475, scene);
+
+    // Sink + faucet, inset into the main counter.
+    box(0.5, 0.14, 0.36, stainlessMat, r.x1-0.35, 0.84, 13.0, scene);
+    box(0.03, 0.24, 0.03, stainlessMat, r.x1-0.55, 0.99, 12.85, scene);
+    box(0.22, 0.03, 0.03, stainlessMat, r.x1-0.46, 1.10, 12.85, scene);
+
+    // Cooktop (hob) set into the island top.
+    box(0.85, 0.02, 0.5, hobMat, 8.5, 0.90, 11.9, scene);
+    [[-0.28,-0.15],[0.28,-0.15],[-0.28,0.15],[0.28,0.15]].forEach(function(o){
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.008, 8, 20), burnerMat);
+      ring.rotation.x = -Math.PI/2;
+      ring.position.set(8.5+o[0], 0.915, 11.9+o[1]);
+      scene.add(ring);
+    });
+
+    // Ceiling-mounted hood over the island cooktop (freestanding island,
+    // so it vents straight up rather than to a wall) with a duct to the
+    // ceiling and an underside light that toggles on click.
+    box(0.7, 0.14, 0.5, stainlessMat, 8.5, 1.55, 11.9, scene);
+    box(0.22, WALL_H-1.62, 0.22, stainlessMat, 8.5, (1.62+WALL_H)/2, 11.9, scene);
+    var hoodLightPanel = box(0.5, 0.02, 0.32, hoodLightMat, 8.5, 1.475, 11.9, scene);
+
+    // Pendant lights over the island's north end.
+    var pendantShades = [];
+    [13.2, 14.0, 14.8].forEach(function(pz){
+      box(0.01, 0.5, 0.01, stainlessMat, 8.5, WALL_H-0.3, pz, scene);
+      pendantShades.push(box(0.16, 0.14, 0.16, pendantGlassMat, 8.5, WALL_H-0.55, pz, scene));
+    });
+
+    // Bar stools along the island's open (west) face.
+    [13.4, 14.1, 14.8].forEach(function(sz){
+      box(0.32, 0.05, 0.32, stoolSeatMat, 7.55, 0.65, sz, scene);
+      [[-0.12,-0.12],[0.12,-0.12],[-0.12,0.12],[0.12,0.12]].forEach(function(o){
+        box(0.03, 0.63, 0.03, stoolLegMat, 7.55+o[0], 0.315, sz+o[1], scene);
+      });
+    });
+
+    // Two interactive drawers on the island's open (west) face, proud of
+    // the solid island body so they aren't occluded by it when closed.
+    var kitchenTweens = [];
+    function kToggle(obj){
+      var ud = obj.userData;
+      ud.isOpen = !ud.isOpen;
+      var cur = ud.mode === 'rotate' ? obj.rotation[ud.axis] : obj.position[ud.axis];
+      var to = ud.isOpen ? ud.openValue : ud.closedValue;
+      kitchenTweens = kitchenTweens.filter(function(t){ return t.obj !== obj; });
+      kitchenTweens.push({ obj:obj, mode:ud.mode, axis:ud.axis, from:cur, to:to, start:performance.now(), duration:420 });
+    }
+    function buildIslandDrawer(cz){
+      var closedX = 7.985;
+      var grp = new THREE.Group();
+      var front = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.42, 0.55), cabinetMat);
+      front.castShadow = true; front.receiveShadow = true;
+      var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.3), stainlessMat);
+      handle.position.set(-0.035, 0.16, 0);
+      front.add(handle);
+      var innerBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.5), applianceInteriorMat);
+      innerBox.position.set(0.3, -0.02, 0);
+      innerBox.castShadow = true; innerBox.receiveShadow = true;
+      grp.add(front, innerBox);
+      grp.position.set(closedX, 0.55, cz);
+      scene.add(grp);
+      grp.userData = { mode:'slide', axis:'x', closedValue: closedX, openValue: closedX-0.35, isOpen:false };
+      return grp;
+    }
+    var islandDrawer1 = buildIslandDrawer(12.3);
+    var islandDrawer2 = buildIslandDrawer(12.9);
+
+    // Wire up all the kitchen's interactive pieces.
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=8.1 && px<=8.9 && pz>=11.6 && pz<=12.2; },
+      toggle: function(){
+        kitchenLightsOn = !kitchenLightsOn;
+        hoodLightMat.emissive.set(kitchenLightsOn ? '#FFDFA0' : '#000000');
+        hoodLightMat.emissiveIntensity = kitchenLightsOn ? 0.8 : 0;
+        pendantShades.forEach(function(sh){
+          sh.material.emissive.set(kitchenLightsOn ? '#FFDFA0' : '#000000');
+          sh.material.emissiveIntensity = kitchenLightsOn ? 0.6 : 0;
+        });
+      },
+      tick: function(){}
+    });
+    fridgePivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:1.5, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=fridgeCX-0.75 && px<=fridgeCX+0.1 && pz>=fridgeCZ-0.35 && pz<=fridgeCZ+0.35; },
+      toggle: function(){ kToggle(fridgePivot); },
+      tick: function(){}
+    });
+    pantryPivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue:-1.5, isOpen:false };
+    kitchenRigs.push({
+      hitTest: function(px,pz){ return px>=pantryCX-0.75 && px<=pantryCX+0.1 && pz>=pantryCZ-0.35 && pz<=pantryCZ+0.35; },
+      toggle: function(){ kToggle(pantryPivot); },
+      tick: function(){}
+    });
+    [islandDrawer1, islandDrawer2].forEach(function(dr){
+      kitchenRigs.push({
+        hitTest: function(px,pz){ return px>=7.6 && px<=8.3 && pz>=dr.position.z-0.28 && pz<=dr.position.z+0.28; },
+        toggle: function(){ kToggle(dr); },
+        tick: function(){}
+      });
+    });
+    kitchenTickers.push(function(){
+      if (!kitchenTweens.length) return;
+      var now = performance.now();
+      kitchenTweens = kitchenTweens.filter(function(t){
+        var p = Math.min(1, (now-t.start)/t.duration);
+        var eased = 1 - Math.pow(1-p, 3);
+        var val = t.from + (t.to-t.from)*eased;
+        if (t.mode === 'rotate') t.obj.rotation[t.axis] = val; else t.obj.position[t.axis] = val;
+        return p < 1;
+      });
+    });
+
+    // Interactive hinged doors on the rest of the plain cabinet faces —
+    // the main counter run, the island's north/south ends (either side of
+    // the two drawers), and the L-extension. Each door sits proud of the
+    // solid cabinet body behind it so it doesn't z-fight/get visually
+    // swallowed by that body.
+    function buildZRunDoors(frontX, z0, z1, doorY, doorH, mat){
+      var zoneWidth = z1-z0;
+      var leafCount = clamp(Math.round(zoneWidth/0.6), 1, 4);
+      var leafW = zoneWidth/leafCount;
+      for (var i=0;i<leafCount;i++){
+        var lz0 = z0+leafW*i, lz1 = lz0+leafW;
+        var hingeAtStart = i % 2 === 0;
+        var hingeZ = hingeAtStart ? lz0 : lz1;
+        var offsetZ = hingeAtStart ? (leafW/2-0.01) : -(leafW/2-0.01);
+        var pivot = new THREE.Group();
+        pivot.position.set(frontX-0.025, doorY, hingeZ);
+        var door = box(0.03, doorH, leafW-0.02, mat, 0, 0, offsetZ, pivot);
+        var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.18, 0.02), stainlessMat);
+        handle.position.set(0.025, 0, hingeAtStart ? (leafW/2-0.08) : -(leafW/2-0.08));
+        door.add(handle);
+        scene.add(pivot);
+        pivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue: hingeAtStart ? -1.3 : 1.3, isOpen:false };
+        (function(a0, a1, p){
+          kitchenRigs.push({
+            hitTest: function(px,pz){ return px>=frontX-0.2 && px<=frontX+0.08 && pz>=a0 && pz<=a1; },
+            toggle: function(){ kToggle(p); },
+            tick: function(){}
+          });
+        })(lz0, lz1, pivot);
+      }
+    }
+    function buildXRunDoors(frontZ, x0, x1, doorY, doorH, mat){
+      var zoneWidth = x1-x0;
+      var leafCount = clamp(Math.round(zoneWidth/0.6), 1, 4);
+      var leafW = zoneWidth/leafCount;
+      for (var i=0;i<leafCount;i++){
+        var lx0 = x0+leafW*i, lx1 = lx0+leafW;
+        var hingeAtStart = i % 2 === 0;
+        var hingeX = hingeAtStart ? lx0 : lx1;
+        var offsetX = hingeAtStart ? (leafW/2-0.01) : -(leafW/2-0.01);
+        var pivot = new THREE.Group();
+        pivot.position.set(hingeX, doorY, frontZ-0.025);
+        var door = box(leafW-0.02, doorH, 0.03, mat, offsetX, 0, 0, pivot);
+        var handle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.18, 0.02), stainlessMat);
+        handle.position.set(hingeAtStart ? (leafW/2-0.08) : -(leafW/2-0.08), 0, 0.025);
+        door.add(handle);
+        scene.add(pivot);
+        pivot.userData = { mode:'rotate', axis:'y', closedValue:0, openValue: hingeAtStart ? 1.3 : -1.3, isOpen:false };
+        (function(a0, a1, p){
+          kitchenRigs.push({
+            hitTest: function(px,pz){ return px>=a0 && px<=a1 && pz>=frontZ-0.2 && pz<=frontZ+0.08; },
+            toggle: function(){ kToggle(p); },
+            tick: function(){}
+          });
+        })(lx0, lx1, pivot);
+      }
+    }
+
+    // Main counter run: front face at r.x1-0.7, full 2.85m length.
+    buildZRunDoors(r.x1-0.7, 12.05, 14.9, 0.425, 0.79, cabinetMat);
+    // Island: the two ends not already taken up by the drawers (front
+    // face at x=8.0).
+    buildZRunDoors(8.0, 10.6, 12.0, 0.425, 0.79, cabinetMat);
+    buildZRunDoors(8.0, 13.2, 14.55, 0.425, 0.79, cabinetMat);
+    // L-extension: runs along X, front face at z=14.6.
+    buildXRunDoors(14.6, 9.535, 10.935, 0.425, 0.79, cabinetMat);
+  })();
+  (function(){
+    // Realistic, interactive dining set: a bigger 6-seat table, place
+    // settings with plates, lit candles, a chandelier overhead, and
+    // chairs that slide out from the table on click.
+    var legMat3 = new THREE.MeshStandardMaterial({ color:'#3A2E22', roughness:0.5 });
+    var plateMat = new THREE.MeshStandardMaterial({ color:'#FAFAF6', roughness:0.3 });
+    var candleMat = new THREE.MeshStandardMaterial({ color:'#F0E6D0', roughness:0.6 });
+    var flameMat2 = new THREE.MeshStandardMaterial({ color:'#3A2A10', emissive:'#000000', emissiveIntensity:0 });
+    var brassMat2 = new THREE.MeshStandardMaterial({ color:'#B08D57', roughness:0.3, metalness:0.7 });
+    var tCX = 4.5, tCZ = 13.2, tW = 2.0, tD = 1.1, tableY = 0.75;
+
+    // Table: thin top + tapered legs (bigger than before: 2.0 x 1.1).
+    box(tW, 0.05, tD, woodMat, tCX, tableY, tCZ, scene);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+      box(0.06, tableY-0.05, 0.06, legMat3, tCX+s[0]*(tW/2-0.08), (tableY-0.05)/2, tCZ+s[1]*(tD/2-0.08), scene);
+    });
+
+    var seats = [
+      { x: tCX-1.3, z: tCZ,       pull:[-1,0] },
+      { x: tCX+1.3, z: tCZ,       pull:[1,0] },
+      { x: tCX-0.5, z: tCZ-0.85,  pull:[0,-1] },
+      { x: tCX+0.5, z: tCZ-0.85,  pull:[0,-1] },
+      { x: tCX-0.5, z: tCZ+0.85,  pull:[0,1] },
+      { x: tCX+0.5, z: tCZ+0.85,  pull:[0,1] }
+    ];
+
+    // Place settings: a plate + rim in front of each seat.
+    seats.forEach(function(s){
+      var plateX = s.x - s.pull[0]*0.55, plateZ = s.z - s.pull[1]*0.55;
+      var plate = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.012, 24), plateMat);
+      plate.position.set(plateX, tableY+0.031, plateZ);
+      scene.add(plate);
+      var rim = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.006, 8, 24), plateMat);
+      rim.rotation.x = -Math.PI/2;
+      rim.position.set(plateX, tableY+0.038, plateZ);
+      scene.add(rim);
+    });
+
+    // 3-candle centerpiece — click to light.
+    var candleFlames = [];
+    [-0.25, 0, 0.25].forEach(function(dx){
+      var h = 0.1 + Math.abs(dx)*0.06;
+      var candle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.02, h, 10), candleMat);
+      candle.position.set(tCX+dx, tableY+0.025+h/2, tCZ);
+      scene.add(candle);
+      var flame = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.035, 8), flameMat2);
+      flame.position.set(tCX+dx, tableY+0.025+h+0.02, tCZ);
+      scene.add(flame);
+      candleFlames.push(flame);
+    });
+    var candlesLit = false;
+    kitchenRigs.push({
+      hitTest: function(px,pz){
+        var dx=px-tCX, dz=pz-tCZ;
+        return Math.sqrt(dx*dx+dz*dz) <= 0.12;
+      },
+      toggle: function(){
+        candlesLit = !candlesLit;
+        candleFlames.forEach(function(f){
+          f.material.emissive.set(candlesLit ? '#FF8C1A' : '#000000');
+          f.material.emissiveIntensity = candlesLit ? 1.0 : 0;
+          f.material.color.set(candlesLit ? '#FFD27A' : '#3A2A10');
+        });
+      },
+      tick: function(){}
+    });
+
+    // Chandelier above the table, hung from the ceiling — click its ring
+    // of lights to switch them on. Uses a radial hit-test (distance from
+    // the table's center) so it doesn't compete with the candles below.
+    var chandelierY = 2.55;
+    box(0.02, WALL_H-chandelierY, 0.02, darkMat, tCX, (chandelierY+WALL_H)/2, tCZ, scene);
+    var chandelierBody = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.12, 16), brassMat2);
+    chandelierBody.position.set(tCX, chandelierY, tCZ);
+    scene.add(chandelierBody);
+    var chandelierBulbs = [];
+    for (var ci=0; ci<5; ci++){
+      var ang = (ci/5) * Math.PI*2;
+      var bx = tCX + Math.cos(ang)*0.22, bz = tCZ + Math.sin(ang)*0.22;
+      box(0.012, 0.16, 0.012, brassMat2, bx, chandelierY-0.02, bz, scene);
+      // Its own material instance (not shared with the candles' flameMat2)
+      // so the two lights can be switched independently.
+      var bulbMat = new THREE.MeshStandardMaterial({ color:'#3A2A10', emissive:'#000000', emissiveIntensity:0 });
+      var bulb = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.05, 8), bulbMat);
+      bulb.position.set(bx, chandelierY-0.12, bz);
+      scene.add(bulb);
+      chandelierBulbs.push(bulb);
+    }
+    var chandelierOn = false;
+    kitchenRigs.push({
+      hitTest: function(px,pz){
+        var dx=px-tCX, dz=pz-tCZ;
+        var d = Math.sqrt(dx*dx+dz*dz);
+        return d >= 0.12 && d <= 0.35;
+      },
+      toggle: function(){
+        chandelierOn = !chandelierOn;
+        chandelierBulbs.forEach(function(b){
+          b.material.emissive.set(chandelierOn ? '#FFDFA0' : '#000000');
+          b.material.emissiveIntensity = chandelierOn ? 0.9 : 0;
+          b.material.color.set(chandelierOn ? '#FFF3D0' : '#3A2A10');
+        });
+      },
+      tick: function(){}
+    });
+
+    // Chairs — each slides out along its own pull direction on click, and
+    // back in on a second click. The hit-test tracks the chair's live
+    // position (not just its closed spot) so it stays clickable once out.
+    seats.forEach(function(s){
+      var closedX = s.x, closedZ = s.z, pullX = s.pull[0], pullZ = s.pull[1];
+      var grp = new THREE.Group();
+      grp.position.set(closedX, 0, closedZ);
+      scene.add(grp);
+      box(0.4, 0.05, 0.4, darkMat, 0, 0.45, 0, grp);
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(c){
+        box(0.03, 0.43, 0.03, legMat3, c[0]*0.17, 0.215, c[1]*0.17, grp);
+      });
+      if (pullZ === 0){
+        box(0.05, 0.42, 0.4, darkMat, pullX*0.185, 0.675, 0, grp);
+      } else {
+        box(0.4, 0.42, 0.05, darkMat, 0, 0.675, pullZ*0.185, grp);
+      }
+      var slide = 0, target = 0, isOut = false;
+      kitchenTickers.push(function(){
+        slide += (target-slide) * 0.1;
+        grp.position.set(closedX + pullX*slide, 0, closedZ + pullZ*slide);
+      });
+      kitchenRigs.push({
+        hitTest: function(px,pz){ return px>=grp.position.x-0.32 && px<=grp.position.x+0.32 && pz>=grp.position.z-0.32 && pz<=grp.position.z+0.32; },
+        toggle: function(){ isOut = !isOut; target = isOut ? 0.45 : 0; },
+        tick: function(){}
+      });
+    });
+    // Flight moved to the west wall, right next to the sofa (which backs
+    // onto that same wall) — runs along +Z (rising north), starting just
+    // past the sofa's north end.
+    var steps2 = 8, stepH2 = 0.2, stepD2 = 0.28, stepW2 = 1.0;
+    var stairX0 = 0.3, stairZ0 = 12.2;
+    for (var i2 = 0; i2 < steps2; i2++){
+      var h2 = stepH2 * (i2 + 1);
+      box(stepW2, h2, stepD2, stepMat, stairX0 + stepW2 / 2, h2 / 2, stairZ0 + stepD2 * i2 + stepD2 / 2, scene);
+    }
+    box(0.05, 0.9, steps2 * stepD2, railMat, stairX0 + stepW2 + 0.08, 0.9, stairZ0 + steps2 * stepD2 / 2, scene);
+  })();
+  var coreRoom = ROOMS[6];
+  var liftBox = buildLiftShaft(coreRoom);
+  buildStaircase(coreRoom, liftBox);
+
+  buildBalcony(BOTTOM_BALCONY, 'S');
+  buildBalcony(TOP_BALCONY, 'N');
+  var bottomLbl = makeFloorLabel('Balcony', '1.20 m wide', 2.0);
+  bottomLbl.position.set((BOTTOM_BALCONY.x0+BOTTOM_BALCONY.x1)/2, 0.02, (BOTTOM_BALCONY.z0+BOTTOM_BALCONY.z1)/2);
+  scene.add(bottomLbl);
+  var topLbl = makeFloorLabel('Balcony', '1.20 m wide', 2.0);
+  topLbl.position.set((TOP_BALCONY.x0+TOP_BALCONY.x1)/2, 0.02, (TOP_BALCONY.z0+TOP_BALCONY.z1)/2);
+  scene.add(topLbl);
+
+  // Exterior perimeter (fills any remaining outer edge not already
+  // covered by a room's own exterior-facing wall).
+  var t = WALL_T/2;
+  addWallSeg(BUILDING.x0-t, BUILDING.x0+t, BOTTOM_BALCONY.z1, TOP_BALCONY.z0, extWallMat);
+  addWallSeg(BUILDING.x1-t, BUILDING.x1+t, BOTTOM_BALCONY.z1, TOP_BALCONY.z0, extWallMat);
+
+  // =================================================================
+  // Color + wall-art pass — feature-wall color accents and framed
+  // paintings on verified solid walls, so the floor doesn't read as an
+  // all-neutral shell.
+  // =================================================================
+  (function(){
+    function addAccentPanel(cx, cy, cz, rotY, w, h, color){
+      var mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.75 });
+      var mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.position.set(cx, cy, cz);
+      mesh.rotation.y = rotY;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+    }
+    var paintingPalette = ['#B5714A', '#3B6E8F', '#6B8F5A', '#C79A4B', '#8F5A7A'];
+    var paintingIdx = 0;
+    function hangPainting(cx, cy, cz, rotY, w, h){
+      var g = new THREE.Group();
+      var frameM = new THREE.MeshStandardMaterial({ color:'#2B2620', roughness:0.5 });
+      var canvasM = new THREE.MeshStandardMaterial({ color: paintingPalette[paintingIdx % paintingPalette.length], roughness: 0.8 });
+      paintingIdx++;
+      box(w, h, 0.02, frameM, 0, 0, 0, g);
+      box(w-0.05, h-0.05, 0.015, canvasM, 0, 0, 0.011, g);
+      box(w-0.05, 0.02, 0.017, frameM, 0, h*0.15, 0.013, g);
+      g.position.set(cx, cy, cz);
+      g.rotation.y = rotY;
+      scene.add(g);
+    }
+
+    // Bedroom: sage feature wall behind the headboard + a painting on the
+    // opposite (east) wall.
+    var bedroom = ROOMS[0];
+    addAccentPanel(bedroom.x0+0.065, 1.35, cz(bedroom), Math.PI/2, rd(bedroom)-0.4, 2.4, '#5A6B4A');
+    hangPainting(bedroom.x1-0.065, 1.7, bedroom.z0+0.9, -Math.PI/2, 0.6, 0.8);
+
+    // Drawing/sofa room: navy feature wall behind the sofa (on the
+    // building's own west exterior wall) + two paintings further along
+    // the same wall.
+    addAccentPanel(0.065, 1.4, 7.75, Math.PI/2, 4.6, 2.4, '#3B5B6B');
+    hangPainting(0.065, 1.7, 6.0, Math.PI/2, 0.55, 0.75);
+    hangPainting(0.065, 1.7, 13.5, Math.PI/2, 0.6, 0.8);
+  })();
+
+  // =================================================================
+  // Camera framing
+  // =================================================================
+  var bw = BUILDING.x1-BUILDING.x0, bd = TOP_BALCONY.z1-BUILDING.z0;
+  var bcx = (BUILDING.x0+BUILDING.x1)/2, bcz = (BUILDING.z0+TOP_BALCONY.z1)/2;
+  var diag = Math.sqrt(bw*bw + bd*bd);
+  var dist = diag*0.72 + 3;
+  var VIEWS = {
+    perspective: { pos: [bcx - dist*0.85, dist*1.05, bcz + dist*1.15], target: [bcx, 0.5, bcz] },
+    top:         { pos: [bcx, diag*1.05 + 4, bcz], target: [bcx, 0, bcz] },
+    front:       { pos: [bcx, dist*0.35, bcz + dist*1.1], target: [bcx, 1.5, bcz] }
+  };
+  camera.position.set.apply(camera.position, VIEWS.perspective.pos);
+  controls.target.set.apply(controls.target, VIEWS.perspective.target);
+  controls.maxDistance = diag*2.5 + 10;
+  controls.update();
+
+  var viewBtns = document.querySelectorAll('.top-btn[data-view]');
+  viewBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      viewBtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var v = VIEWS[btn.dataset.view];
+      camera.position.set.apply(camera.position, v.pos);
+      controls.target.set.apply(controls.target, v.target);
+      controls.update();
+    });
+  });
+
+  // =================================================================
+  // Kitchen click-through
+  // =================================================================
+  // Opening this page as a local file (file://…) has no server-side
+  // rewrites, so the pretty "/design-studio/…" routes 404 — fall back to
+  // the actual filename (same folder) in that case.
+  function studioPath(route, file){
+    return (location.protocol === 'file:') ? file : route;
+  }
+  var kitchenRoom = ROOMS.filter(function(r){ return r.isKitchen; })[0];
+  function goToKitchen(){
+    var q = '?w=' + rw(kitchenRoom).toFixed(3) + '&d=' + rd(kitchenRoom).toFixed(3) + '&from=floor';
+    window.location.href = studioPath('/design-studio/kitchen', 'design-studio-kitchen.html') + q;
+  }
+  document.getElementById('kitchen-badge').addEventListener('click', goToKitchen);
+  var raycaster = new THREE.Raycaster();
+  var pointer = new THREE.Vector2();
+  // Runs the same "what did the user click" hit-test used by both the
+  // orbit views and Walk-inside mode — factored out so a look-around drag
+  // (which also starts with a pointerdown) never gets mistaken for a click.
+  function tryInteract(clientX, clientY){
+    var rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((clientX-rect.left)/rect.width)*2-1;
+    pointer.y = -((clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(pointer, camera);
+    var hits = raycaster.intersectObjects(scene.children, true);
+    for (var i=0;i<hits.length;i++){
+      var p = hits[i].point;
+      if (p.x >= kitchenRoom.x0 && p.x <= kitchenRoom.x1 && p.z >= kitchenRoom.z0 && p.z <= kitchenRoom.z1){
+        goToKitchen();
+        return true;
+      }
+      if (bedRig && bedClickRegion && p.x >= bedClickRegion.x0 && p.x <= bedClickRegion.x1 && p.z >= bedClickRegion.z0 && p.z <= bedClickRegion.z1){
+        bedRig.toggle();
+        return true;
+      }
+      if (wardrobeRig && wardrobeClickRegion && p.x >= wardrobeClickRegion.x0 && p.x <= wardrobeClickRegion.x1 && p.z >= wardrobeClickRegion.z0 && p.z <= wardrobeClickRegion.z1){
+        wardrobeRig.toggleNear(p.x, p.y);
+        return true;
+      }
+      if (tvPanelClickRegion && p.x >= tvPanelClickRegion.x0 && p.x <= tvPanelClickRegion.x1 && p.z >= tvPanelClickRegion.z0 && p.z <= tvPanelClickRegion.z1){
+        window.open(studioPath('/design-studio/tv-panel', 'design-studio-tv-panel.html'), '_blank');
+        return true;
+      }
+      for (var c=0; c<curtainRigs.length; c++){
+        if (curtainRigs[c].hitTest(p.x, p.z)){
+          curtainRigs[c].toggle();
+          return true;
+        }
+      }
+      for (var w=0; w<slidingWindowRigs.length; w++){
+        if (slidingWindowRigs[w].hitTest(p.x, p.z)){
+          slidingWindowRigs[w].toggle();
+          return true;
+        }
+      }
+      if (liftRig && liftRig.hitTest(p.x, p.z)){
+        liftRig.toggle();
+        return true;
+      }
+      for (var k=0; k<kitchenRigs.length; k++){
+        if (kitchenRigs[k].hitTest(p.x, p.z, p.y)){
+          kitchenRigs[k].toggle();
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  var interactDownPos = null;
+  renderer.domElement.addEventListener('pointerdown', function(e){
+    interactDownPos = { x: e.clientX, y: e.clientY };
+  });
+  renderer.domElement.addEventListener('pointerup', function(e){
+    if (!interactDownPos) return;
+    var moved = Math.hypot(e.clientX-interactDownPos.x, e.clientY-interactDownPos.y);
+    interactDownPos = null;
+    if (moved > 6) return; // was an orbit/look drag, not a click
+    tryInteract(e.clientX, e.clientY);
+  });
+
+  // =================================================================
+  // Walk-inside mode — first-person look (drag) + move (WASD/arrows),
+  // camera at eye height, clicks on furniture still open their design.
+  // =================================================================
+  var walkMode = false;
+  var walkYaw = 0, walkPitch = 0;
+  var walkKeys = {};
+  var EYE_H = 1.6;
+  var walkBtn = document.getElementById('walk-btn');
+  var walkHint = document.getElementById('walk-hint');
+
+  function enterWalkMode(){
+    walkMode = true;
+    controls.enabled = false;
+    walkBtn.classList.add('active');
+    walkHint.style.display = 'block';
+    viewBtns.forEach(function(b){ b.classList.remove('active'); });
+    var bedroom = ROOMS[0];
+    camera.position.set(cx(bedroom), EYE_H, bedroom.z0 + 0.9);
+    camera.lookAt(cx(bedroom), 1.4, bedroom.z1 - 0.6);
+    var e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    walkYaw = e.y; walkPitch = e.x;
+  }
+  function exitWalkMode(){
+    walkMode = false;
+    controls.enabled = true;
+    walkBtn.classList.remove('active');
+    walkHint.style.display = 'none';
+  }
+  walkBtn.addEventListener('click', function(){
+    if (walkMode) { exitWalkMode(); viewBtns[0].click(); }
+    else enterWalkMode();
+  });
+  viewBtns.forEach(function(btn){ btn.addEventListener('click', function(){ if (walkMode) exitWalkMode(); }); });
+
+  var lookDown = null;
+  renderer.domElement.addEventListener('pointerdown', function(e){
+    if (!walkMode) return;
+    lookDown = { x: e.clientX, y: e.clientY, yaw: walkYaw, pitch: walkPitch };
+  });
+  window.addEventListener('pointermove', function(e){
+    if (!walkMode || !lookDown) return;
+    var dx = e.clientX - lookDown.x, dy = e.clientY - lookDown.y;
+    walkYaw = lookDown.yaw - dx * 0.0045;
+    walkPitch = clamp(lookDown.pitch - dy * 0.0045, -1.3, 1.3);
+    camera.quaternion.setFromEuler(new THREE.Euler(walkPitch, walkYaw, 0, 'YXZ'));
+  });
+  window.addEventListener('pointerup', function(){ lookDown = null; });
+  window.addEventListener('keydown', function(e){ walkKeys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keyup', function(e){ walkKeys[e.key.toLowerCase()] = false; });
+
+  var walkForward = new THREE.Vector3(), walkRight = new THREE.Vector3();
+  function updateWalk(){
+    if (!walkMode) return;
+    var speed = 2.4 / 60; // per animation-frame step, ~2.4 m/s
+    camera.getWorldDirection(walkForward);
+    walkForward.y = 0; walkForward.normalize();
+    walkRight.crossVectors(walkForward, camera.up).normalize();
+    var fwd = (walkKeys['w']||walkKeys['arrowup'] ? 1:0) - (walkKeys['s']||walkKeys['arrowdown'] ? 1:0);
+    var side = (walkKeys['d']||walkKeys['arrowright'] ? 1:0) - (walkKeys['a']||walkKeys['arrowleft'] ? 1:0);
+    if (fwd){ camera.position.addScaledVector(walkForward, fwd*speed); }
+    if (side){ camera.position.addScaledVector(walkRight, side*speed); }
+    camera.position.x = clamp(camera.position.x, BUILDING.x0+0.3, BUILDING.x1-0.3);
+    camera.position.z = clamp(camera.position.z, BUILDING.z0+0.3, TOP_BALCONY.z1-0.3);
+    camera.position.y = EYE_H;
+  }
+
+  // =================================================================
+  // Save photo
+  // =================================================================
+  document.getElementById('snapshot-btn').addEventListener('click', function(){
+    renderer.render(scene, camera);
+    var link = document.createElement('a');
+    link.download = 'floor-design.png';
+    link.href = renderer.domElement.toDataURL('image/png');
+    link.click();
+  });
+
+  // =================================================================
+  // Get AI help — reuses the existing generic backend render endpoint
+  // =================================================================
+  var AI_RENDER_API = 'http://localhost:8000/api/v1/design/render-from-layout';
+  var aiModal = document.getElementById('ai-modal');
+  var aiBody = document.getElementById('ai-body');
+  var aiRetryBtn = document.getElementById('ai-retry-btn');
+  var aiDownloadLink = document.getElementById('ai-download-link');
+  var aiLastScreenshot = null;
+  var aiLastBlobUrl = null;
+
+  function dataUrlToBlobUrl(dataUrl){
+    var comma = dataUrl.indexOf(',');
+    var mimeMatch = dataUrl.slice(0, comma).match(/data:(.*?);base64/);
+    var mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    var binary = atob(dataUrl.slice(comma + 1));
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  }
+
+  function buildFloorDescription(){
+    return ROOMS.map(function(r){
+      return r.label + ': ' + rw(r).toFixed(2) + 'm x ' + rd(r).toFixed(2) + 'm';
+    }).concat([
+      'Bottom balcony: 1.20m wide',
+      'Top balcony: 1.20m wide',
+      'Includes a dogleg staircase and a lift beside the lobby.',
+      'This is a full second-floor residential layout — render it as a realistic architectural interior visualization, same room layout and proportions.'
+    ]).join('\n');
+  }
+
+  function setAiBodyLoading(){
+    aiRetryBtn.style.display = 'none';
+    aiDownloadLink.style.display = 'none';
+    aiBody.innerHTML = '';
+    var spinner = document.createElement('div'); spinner.className = 'ai-spinner';
+    var status = document.createElement('div'); status.id = 'ai-status'; status.textContent = 'Rendering your floor…';
+    aiBody.appendChild(spinner); aiBody.appendChild(status);
+  }
+  function setAiBodyError(message){
+    aiRetryBtn.style.display = 'inline-block';
+    aiDownloadLink.style.display = 'none';
+    aiBody.innerHTML = '';
+    var status = document.createElement('div'); status.id = 'ai-status'; status.className = 'error'; status.textContent = message;
+    aiBody.appendChild(status);
+  }
+  function setAiBodyResult(dataUrl){
+    aiRetryBtn.style.display = 'none';
+    if (aiLastBlobUrl) URL.revokeObjectURL(aiLastBlobUrl);
+    aiLastBlobUrl = dataUrlToBlobUrl(dataUrl);
+    aiDownloadLink.style.display = 'inline-block';
+    aiDownloadLink.href = aiLastBlobUrl;
+    aiDownloadLink.download = 'floor-ai-render-' + Date.now() + '.png';
+    aiBody.innerHTML = '';
+    var img = document.createElement('img'); img.src = dataUrl;
+    aiBody.appendChild(img);
+  }
+  function runAiRender(){
+    if (!aiLastScreenshot) return;
+    setAiBodyLoading();
+    var base64 = aiLastScreenshot.split(',')[1];
+    fetch(AI_RENDER_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_base64: base64, mime_type: 'image/png', description: buildFloorDescription() })
+    })
+      .then(function(res){ return res.json().then(function(json){ return { ok: res.ok, json: json }; }); })
+      .then(function(result){
+        if (!result.ok || !result.json || result.json.success === false){
+          throw new Error((result.json && result.json.error && result.json.error.message) || 'Could not render this floor.');
+        }
+        setAiBodyResult(result.json.data.image_data_url);
+      })
+      .catch(function(err){ setAiBodyError(err.message || 'Something went wrong reaching the AI service.'); });
+  }
+  document.getElementById('ai-help-btn').addEventListener('click', function(){
+    renderer.render(scene, camera);
+    aiLastScreenshot = renderer.domElement.toDataURL('image/png');
+    aiModal.classList.add('visible');
+    runAiRender();
+  });
+  document.getElementById('ai-close').addEventListener('click', function(){ aiModal.classList.remove('visible'); });
+  aiRetryBtn.addEventListener('click', runAiRender);
+
+  // =================================================================
+  // Resize + render loop
+  // =================================================================
+  function onResize(){
+    var w = holder.clientWidth, h = holder.clientHeight;
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  window.addEventListener('resize', onResize);
+  function animate(){
+    requestAnimationFrame(animate);
+    if (walkMode) updateWalk(); else controls.update();
+    if (bedRig) bedRig.tick();
+    if (wardrobeRig) wardrobeRig.tick();
+    if (liftRig) liftRig.tick();
+    tickSlidingWindows();
+    for (var kt=0; kt<kitchenTickers.length; kt++) kitchenTickers[kt]();
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  document.getElementById('loading-veil').style.display = 'none';
+  window.__floorDebug = { camera: camera, controls: controls, scene: scene, ROOMS: ROOMS };
+})();
+</script>
+</body>
+</html>

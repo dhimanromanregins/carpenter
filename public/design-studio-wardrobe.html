@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Wardrobe Designer — Design Studio</title>
+<meta name="description" content="Design your dream wardrobe in interactive 3D with Dhiman Interiors' Wardrobe Designer tool. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio/wardrobe" />
+<meta property="og:title" content="Wardrobe Designer — 3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Design your dream wardrobe in interactive 3D." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio/wardrobe" />
+<title>Wardrobe Designer — 3D Design Studio | Dhiman Interiors</title>
 <style>
   :root{
     --bg: #F4F1EA;
@@ -330,6 +336,8 @@
   var DEPTH = 0.6;
   var WALL_Z = -1.3;
   var FLOOR_DEPTH = 2.8;
+  var DRESSING_W = 0.9, DRESSING_GAP = 0.35;
+  function sceneCenterX(){ return (DRESSING_GAP + DRESSING_W) / 2; }
   var globals = { cabinet: '#D9C7A8', hardware: '#B08D57' };
 
   var MAX_SECTIONS = 6;
@@ -402,13 +410,14 @@
 
   function updateShadowFrustum(){
     var th = totalHeight();
-    var half = Math.max(WALL.width, th) / 2 + 1.5;
+    var cx = sceneCenterX();
+    var half = Math.max(WALL.width + DRESSING_GAP + DRESSING_W, th) / 2 + 1.5;
     key.shadow.camera.left = -half; key.shadow.camera.right = half;
     key.shadow.camera.top = half; key.shadow.camera.bottom = -half;
     key.shadow.camera.far = half * 3 + 6;
     key.shadow.camera.updateProjectionMatrix();
-    key.position.set(-half*0.7 , half*0.9 + 2.5, WALL_Z + half*0.9 + 1);
-    key.target.position.set(0, th/2, WALL_Z+0.3);
+    key.position.set(cx-half*0.7 , half*0.9 + 2.5, WALL_Z + half*0.9 + 1);
+    key.target.position.set(cx, th/2, WALL_Z+0.3);
     key.target.updateMatrixWorld();
   }
 
@@ -439,34 +448,36 @@
   scene.add(bb);
 
   function rebuildBackdrop(){
-    var floorWidth = Math.max(WALL.width+1.6, 3);
+    var cx = sceneCenterX();
+    var floorWidth = Math.max(WALL.width + DRESSING_GAP + DRESSING_W + 1.6, 3);
     var wallHeight = totalHeight()+0.6;
 
     floor.geometry.dispose();
     floor.geometry = new THREE.PlaneGeometry(floorWidth, FLOOR_DEPTH);
-    floor.position.set(0, 0, WALL_Z + FLOOR_DEPTH/2);
+    floor.position.set(cx, 0, WALL_Z + FLOOR_DEPTH/2);
     floorMat.map.repeat.set(Math.max(2, floorWidth/1.3), Math.max(2, FLOOR_DEPTH/1.3));
     floorMat.needsUpdate = true;
 
     backWall.geometry.dispose();
     backWall.geometry = new THREE.PlaneGeometry(floorWidth, wallHeight);
-    backWall.position.set(0, wallHeight/2, WALL_Z);
+    backWall.position.set(cx, wallHeight/2, WALL_Z);
 
     bb.geometry.dispose();
     bb.geometry = new THREE.BoxGeometry(floorWidth, 0.09, 0.03);
-    bb.position.set(0, 0.045, WALL_Z+0.015);
+    bb.position.set(cx, 0.045, WALL_Z+0.015);
 
     updateShadowFrustum();
   }
 
   function fitCameraToWardrobe(){
-    var w = WALL.width, h = totalHeight();
+    var cx = sceneCenterX();
+    var w = WALL.width + DRESSING_GAP + DRESSING_W, h = totalHeight();
     var diag = Math.sqrt(w*w + h*h);
     var dist = Math.max(w, h*1.3)*0.95 + 2.2;
     var frontZ = WALL_Z + DEPTH + 0.05;
-    VIEWS.perspective = { pos: [dist*0.5, h*0.5+0.3, frontZ+dist*0.85], target: [0, h*0.45, frontZ] };
-    VIEWS.top = { pos: [0.01, diag*1.7+3, WALL_Z+0.6], target: [0, 0, WALL_Z+0.6] };
-    VIEWS.front = { pos: [0, h*0.5, frontZ+dist*1.15], target: [0, h*0.45, frontZ] };
+    VIEWS.perspective = { pos: [cx+dist*0.5, h*0.5+0.3, frontZ+dist*0.85], target: [cx, h*0.45, frontZ] };
+    VIEWS.top = { pos: [cx+0.01, diag*1.7+3, WALL_Z+0.6], target: [cx, 0, WALL_Z+0.6] };
+    VIEWS.front = { pos: [cx, h*0.5, frontZ+dist*1.15], target: [cx, h*0.45, frontZ] };
     controls.maxDistance = diag*2.4 + 9;
     camera.position.set.apply(camera.position, VIEWS.perspective.pos);
     controls.target.set.apply(controls.target, VIEWS.perspective.target);
@@ -483,6 +494,9 @@
   var sharedInteriorMat = new THREE.MeshStandardMaterial({ color: '#F5F2EA', roughness: 0.7, metalness: 0.02 });
   var sharedRackMat = new THREE.MeshStandardMaterial({ color: shadeColor('#F5F2EA', -18), roughness: 0.5, metalness: 0.08 });
   var darkTrimMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.35, metalness: 0.4 });
+  var mirrorMat = new THREE.MeshStandardMaterial({ color: '#DCE6EA', roughness: 0.06, metalness: 0.6 });
+  var tableTopMat = new THREE.MeshStandardMaterial({ color: '#F5F2EA', roughness: 0.35, metalness: 0.05 });
+  var stoolFabricMat = new THREE.MeshStandardMaterial({ color: '#8C5333', roughness: 0.75 });
 
   function updateCabinetMat(hex){
     globals.cabinet = hex;
@@ -631,6 +645,74 @@
     }
   }
 
+  // A single interactive sliding drawer at an explicit center position —
+  // same slide convention as buildDrawers (userData.mode/axis/open/closed),
+  // just placed freely instead of stacked to fill a full-height zone.
+  function buildTableDrawer(g, centerX, centerY, frontZ, width, height, depth){
+    var grp = new THREE.Group();
+    var front = new THREE.Mesh(new THREE.BoxGeometry(width-0.02, height-0.015, 0.02), sharedCabinetMat);
+    front.castShadow = true; front.receiveShadow = true;
+    var handle = new THREE.Mesh(new THREE.BoxGeometry(width*0.4, 0.018, 0.018), sharedHandleMat);
+    handle.position.set(0, 0, 0.02);
+    front.add(handle);
+    var box = new THREE.Mesh(new THREE.BoxGeometry(width-0.06, height*0.7, depth*0.8), sharedInteriorMat);
+    box.position.set(0, -0.01, -depth*0.42);
+    box.castShadow = true; box.receiveShadow = true;
+    grp.add(front, box);
+    grp.position.set(centerX, centerY, frontZ);
+    grp.userData.mode = 'slide';
+    grp.userData.axis = 'z';
+    grp.userData.closedValue = frontZ;
+    grp.userData.openValue = frontZ + 0.32;
+    grp.userData.isOpen = false;
+    g.add(grp);
+    return grp;
+  }
+
+  // Dressing table: worktop on four legs, two interactive drawers under the
+  // top, a wall mirror above, and a stool in front — sits beside the
+  // wardrobe against the same back wall.
+  var dressingGroup = null;
+  function buildDressingTable(){
+    if (dressingGroup) scene.remove(dressingGroup);
+    dressingGroup = new THREE.Group();
+
+    var w = WALL.width, cx = w/2 + DRESSING_GAP + DRESSING_W/2;
+    var tableW = DRESSING_W, tableD = 0.45, topY = 0.75, legT = 0.045;
+    var backZ = WALL_Z + 0.03, frontZ = backZ + tableD;
+    var midZ = backZ + tableD/2;
+
+    // Tabletop + apron.
+    addMesh(dressingGroup, new THREE.BoxGeometry(tableW, 0.03, tableD), tableTopMat, cx, topY, midZ);
+    addMesh(dressingGroup, new THREE.BoxGeometry(tableW-0.06, 0.06, 0.02), sharedCabinetMat, cx, topY-0.045, frontZ-0.01);
+
+    // Legs.
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+      addMesh(dressingGroup, new THREE.BoxGeometry(legT, topY-0.03, legT), sharedCabinetMat,
+        cx + s[0]*(tableW/2-legT), (topY-0.03)/2, midZ + s[1]*(tableD/2-legT));
+    });
+
+    // Two interactive drawers under the top.
+    var drawerY = topY - 0.16, drawerH = 0.18, drawerW = tableW/2 - 0.03;
+    buildTableDrawer(dressingGroup, cx - tableW/4, drawerY, frontZ-0.02, drawerW, drawerH, tableD-0.08);
+    buildTableDrawer(dressingGroup, cx + tableW/4, drawerY, frontZ-0.02, drawerW, drawerH, tableD-0.08);
+
+    // Wall mirror above the table, in a simple frame.
+    var mirrorW = tableW*0.75, mirrorH = 0.85, mirrorY = topY + 0.1 + mirrorH/2;
+    addMesh(dressingGroup, new THREE.BoxGeometry(mirrorW+0.06, mirrorH+0.06, 0.03), sharedCabinetMat, cx, mirrorY, WALL_Z+0.02, false);
+    addMesh(dressingGroup, new THREE.BoxGeometry(mirrorW, mirrorH, 0.015), mirrorMat, cx, mirrorY, WALL_Z+0.045);
+
+    // Stool in front.
+    var stoolZ = frontZ + 0.42;
+    addMesh(dressingGroup, new THREE.CylinderGeometry(0.19, 0.19, 0.05, 20), stoolFabricMat, cx, 0.42, stoolZ);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+      addMesh(dressingGroup, new THREE.BoxGeometry(0.03, 0.4, 0.03), sharedCabinetMat,
+        cx + s[0]*0.13, 0.2, stoolZ + s[1]*0.13);
+    });
+
+    scene.add(dressingGroup);
+  }
+
   // Open-front shell — back, sides, top, bottom, deliberately with NO front
   // face. A single solid box here would leave a same-colored wall sitting
   // right behind the doors, so opening a door (or an open-shelf section)
@@ -714,6 +796,7 @@
   function regenerate(){
     rebuildBackdrop();
     buildWardrobe();
+    buildDressingTable();
     fitCameraToWardrobe();
   }
 
@@ -919,7 +1002,8 @@
     mouse.x = ((e.clientX - rect.left)/rect.width)*2 - 1;
     mouse.y = -((e.clientY - rect.top)/rect.height)*2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    var intersects = raycaster.intersectObject(wardrobeGroup, true);
+    var targets = dressingGroup ? [wardrobeGroup, dressingGroup] : [wardrobeGroup];
+    var intersects = raycaster.intersectObjects(targets, true);
     if (!intersects.length) return;
     var cursor = intersects[0].object;
     while (cursor){

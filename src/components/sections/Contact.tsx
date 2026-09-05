@@ -5,13 +5,32 @@ import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { FloatingInput } from "@/components/ui/FloatingInput";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { submitContactEnquiry } from "@/api/contact";
+import { ApiError } from "@/api/client";
 
 export function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    const form = new FormData(e.currentTarget);
+    const name = String(form.get("name") ?? "").trim();
+    const phone = String(form.get("phone") ?? "").trim();
+    const email = String(form.get("email") ?? "").trim();
+    const message = String(form.get("message") ?? "").trim();
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitContactEnquiry({ name, phone, email, message });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't send your enquiry. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,12 +77,15 @@ export function Contact() {
                     name="message"
                     as="textarea"
                   />
+                  {error && <p className="text-sm text-red-400">{error}</p>}
+
                   <MagneticButton
                     type="submit"
                     variant="solid"
                     className="self-start"
+                    disabled={submitting}
                   >
-                    Send Enquiry
+                    {submitting ? "Sending..." : "Send Enquiry"}
                   </MagneticButton>
                 </form>
               )}

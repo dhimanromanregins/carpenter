@@ -16,6 +16,13 @@ const LINKS = [
     isRoute: false,
     hideOnMobile: true,
   },
+  {
+    label: "Inspiration",
+    href: "/inspiration",
+    isExternal: false,
+    isRoute: true,
+    hideOnMobile: true,
+  },
   { label: "Contact", href: "#contact", isExternal: false, isRoute: false },
 ];
 
@@ -51,19 +58,7 @@ export function Navbar() {
           scrolled ? "glass" : "border-b border-transparent bg-transparent"
         )}
       >
-        <nav className="container-luxury flex h-20 items-center justify-between">
-          <a
-            href="#hero"
-            data-cursor="Home"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNav("#hero");
-            }}
-            className="font-display text-lg tracking-[0.15em] text-cream"
-          >
-            DHIMAN <span className="text-gold">INTERIORS</span>
-          </a>
-
+        <nav className="container-luxury flex h-20 items-center justify-end gap-10">
           <ul className="hidden items-center gap-10 lg:flex">
             {LINKS.map((link) => (
               <li key={link.href} className="relative">
@@ -100,13 +95,23 @@ export function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden lg:block">
+          <div className="hidden items-center gap-3 lg:flex">
             <MagneticButton
               variant="outline"
               className="!px-6 !py-3 !text-[11px]"
               onClick={() => handleNav("#contact")}
             >
               Book Site Visit
+            </MagneticButton>
+            <MagneticButton
+              variant="solid"
+              className="!px-6 !py-3 !text-[11px]"
+              onClick={() => {
+                setMenuOpen(false);
+                navigate("/quote");
+              }}
+            >
+              Get Quotation
             </MagneticButton>
           </div>
 
@@ -169,6 +174,22 @@ export function Navbar() {
                 {link.label}
               </motion.a>
             ))}
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + LINKS.length * 0.07, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <MagneticButton
+                variant="solid"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/quote");
+                }}
+              >
+                Get Quotation
+              </MagneticButton>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

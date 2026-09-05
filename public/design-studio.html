@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Design Studio</title>
+<meta name="description" content="Explore Dhiman Interiors' interactive 3D Design Studio — visualize kitchens, wardrobes, floors, beds and TV panels before you build. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio" />
+<meta property="og:title" content="3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Visualize your kitchen, wardrobe, floor, bed or TV panel in interactive 3D before you build." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio" />
+<title>3D Design Studio | Dhiman Interiors</title>
 <style>
   :root{
     --bg: #F4F1EA;
@@ -53,7 +59,8 @@
   #chooser h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 700; margin: 0; letter-spacing: -0.01em; }
   #chooser p.lede { font-size: 15px; color: var(--sub); margin: -28px 0 0; max-width: 480px; line-height: 1.6; }
 
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; max-width: 760px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; width: 100%; max-width: 1080px; }
+  @media (max-width: 1180px) { .cards { grid-template-columns: 1fr 1fr; max-width: 760px; } }
   @media (max-width: 900px) { .cards { grid-template-columns: 1fr; max-width: 420px; } }
 
   .card {
@@ -112,7 +119,18 @@
       <p>Give us a wall size and we'll build a wardrobe to fit — sliding or hinged doors, shelves and drawers you can open.</p>
       <span class="cta">Design your wardrobe &rarr;</span>
     </a>
+
+    <a class="card" href="/design-studio/floor">
+      <span class="icon">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" rx="1" stroke="currentColor" stroke-width="1.6"/><line x1="4" y1="14" x2="14" y2="14" stroke="currentColor" stroke-width="1.4"/><line x1="14" y1="4" x2="14" y2="20" stroke="currentColor" stroke-width="1.4"/><line x1="14" y1="20" x2="28" y2="20" stroke="currentColor" stroke-width="1.4"/><line x1="20" y1="20" x2="20" y2="28" stroke="currentColor" stroke-width="1.4"/></svg>
+      </span>
+      <h2>Floor Layout</h2>
+      <p>Turn a full floor plan into a walkable 3D model — every room sized and placed to match your drawing.</p>
+      <span class="cta">Design your floor &rarr;</span>
+    </a>
   </div>
+
+  <a class="back-home" href="/design-studio/floor-walkthrough">🚶 Try the new first-person floor walkthrough &rarr;</a>
 
   <a class="back-home" href="/">&larr; Back to home</a>
 </div>

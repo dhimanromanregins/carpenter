@@ -211,6 +211,148 @@ export interface QuotationSaveRequest extends QuotationCalculateRequest {
   customer_email?: string | null;
 }
 
+export type WardrobeTier = "standard" | "premium" | "acrylic";
+
+export interface WardrobeCalculateRequest {
+  area_sqft: number;
+}
+
+export interface WardrobeTierOption {
+  tier: WardrobeTier;
+  name: string;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+}
+
+export interface WardrobeCalculateResponse {
+  area_sqft: number;
+  tiers: WardrobeTierOption[];
+  currency: string;
+}
+
+export interface WardrobeSaveRequest {
+  area_sqft: number;
+  tier: WardrobeTier;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  customer_address: string;
+}
+
+export interface WardrobeSavedOut {
+  id: number;
+  quotation_number: string;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string;
+  area_sqft: number;
+  tier: WardrobeTier;
+  tier_name: string;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+  currency: string;
+}
+
+export type TileTier = "standard" | "premium";
+export type TileInstallationMethod = "cement" | "chemical";
+
+export interface TileCalculateRequest {
+  area_sqft: number;
+  installation_method: TileInstallationMethod;
+}
+
+export interface TileTierOption {
+  tier: TileTier;
+  name: string;
+  base_rate_per_sqft: number;
+  installation_extra_per_sqft: number;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+}
+
+export interface TileCalculateResponse {
+  area_sqft: number;
+  installation_method: TileInstallationMethod;
+  tiers: TileTierOption[];
+  currency: string;
+}
+
+export interface TileSaveRequest {
+  area_sqft: number;
+  tier: TileTier;
+  installation_method: TileInstallationMethod;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  customer_address: string;
+}
+
+export interface TileSavedOut {
+  id: number;
+  quotation_number: string;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string;
+  area_sqft: number;
+  tier: TileTier;
+  tier_name: string;
+  installation_method: TileInstallationMethod;
+  base_rate_per_sqft: number;
+  installation_extra_per_sqft: number;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+  currency: string;
+}
+
+export interface CeilingCalculateRequest {
+  area_sqft: number;
+}
+
+export interface CeilingCalculateResponse {
+  area_sqft: number;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+  currency: string;
+}
+
+export interface CeilingSaveRequest {
+  area_sqft: number;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  customer_address: string;
+}
+
+export interface CeilingSavedOut {
+  id: number;
+  quotation_number: string;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string;
+  area_sqft: number;
+  rate_per_sqft: number;
+  total: number;
+  description: string;
+  included_items: string[];
+  currency: string;
+}
+
 export interface QuotationSavedOut extends QuotationCalculateResponse {
   id: number;
   quotation_number: string;

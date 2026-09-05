@@ -2,11 +2,15 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   AreaMode,
+  CeilingCalculateResponse,
   CustomQuotationInput,
   DimensionUnit,
   GlassCabinetCustomItem,
   LightingItem,
   QuotationType,
+  TileInstallationMethod,
+  TileTierOption,
+  WardrobeTierOption,
 } from "@/types/quotation";
 
 export const CUSTOM_STEPS = [
@@ -22,7 +26,27 @@ export const CUSTOM_STEPS = [
 ] as const;
 export type CustomStep = (typeof CUSTOM_STEPS)[number];
 
-export type BuilderStage = "area" | "packageOrCustom" | "packageEstimate" | "custom" | "customerInfo";
+export const QUOTATION_CATEGORIES = ["tilesFlooring", "kitchen", "wardrobe", "ceiling"] as const;
+export type QuotationCategory = (typeof QUOTATION_CATEGORIES)[number];
+
+export type BuilderStage =
+  | "category"
+  | "area"
+  | "packageOrCustom"
+  | "packageEstimate"
+  | "custom"
+  | "customerInfo"
+  | "wardrobeArea"
+  | "wardrobeTier"
+  | "wardrobeCustomerInfo"
+  | "tilesArea"
+  | "tilesInstallMethod"
+  | "tilesTier"
+  | "tilesCustomerInfo"
+  | "ceilingArea"
+  | "ceilingEstimate"
+  | "ceilingCustomerInfo"
+  | "comingSoon";
 
 interface AreaState {
   mode: AreaMode;
@@ -37,6 +61,7 @@ interface CustomerState {
   name: string;
   phone: string;
   email: string;
+  address: string;
 }
 
 function emptyCustom(): CustomQuotationInput {
@@ -63,14 +88,24 @@ function emptyCustom(): CustomQuotationInput {
 
 interface QuotationState {
   stage: BuilderStage;
+  category: QuotationCategory | null;
   quotationType: QuotationType | null;
   area: AreaState;
   packageId: string | null;
   custom: CustomQuotationInput;
   customStepIndex: number;
   customer: CustomerState;
+  wardrobeQuote: WardrobeTierOption | null;
+  tileInstallMethod: TileInstallationMethod | null;
+  tileQuote: TileTierOption | null;
+  ceilingQuote: CeilingCalculateResponse | null;
 
   setStage(stage: BuilderStage): void;
+  selectCategory(category: QuotationCategory): void;
+  selectWardrobeTier(option: WardrobeTierOption): void;
+  selectTileInstallMethod(method: TileInstallationMethod): void;
+  selectTileTier(option: TileTierOption): void;
+  confirmCeilingEstimate(quote: CeilingCalculateResponse): void;
   setAreaMode(mode: AreaMode): void;
   setAreaSqft(value: number | null): void;
   setDimensions(length: number | null, width: number | null): void;
@@ -106,20 +141,43 @@ interface QuotationState {
 }
 
 const initialArea: AreaState = { mode: "total_area", areaSqft: null, length: null, width: null, unit: "FEET", runningFeet: null };
-const initialCustomer: CustomerState = { name: "", phone: "", email: "" };
+const initialCustomer: CustomerState = { name: "", phone: "", email: "", address: "" };
 
 export const useQuotationStore = create<QuotationState>()(
   persist(
     (set, get) => ({
-      stage: "area",
+      stage: "category",
+      category: null,
       quotationType: null,
       area: initialArea,
       packageId: null,
       custom: emptyCustom(),
       customStepIndex: 0,
       customer: initialCustomer,
+      wardrobeQuote: null,
+      tileInstallMethod: null,
+      tileQuote: null,
+      ceilingQuote: null,
 
       setStage: (stage) => set({ stage }),
+      selectCategory: (category) =>
+        set({
+          category,
+          stage:
+            category === "kitchen"
+              ? "area"
+              : category === "wardrobe"
+                ? "wardrobeArea"
+                : category === "tilesFlooring"
+                  ? "tilesArea"
+                  : category === "ceiling"
+                    ? "ceilingArea"
+                    : "comingSoon",
+        }),
+      selectWardrobeTier: (option) => set({ wardrobeQuote: option, stage: "wardrobeCustomerInfo" }),
+      selectTileInstallMethod: (method) => set({ tileInstallMethod: method, stage: "tilesTier" }),
+      selectTileTier: (option) => set({ tileQuote: option, stage: "tilesCustomerInfo" }),
+      confirmCeilingEstimate: (quote) => set({ ceilingQuote: quote, stage: "ceilingCustomerInfo" }),
       setAreaMode: (mode) => set((s) => ({ area: { ...s.area, mode } })),
       setAreaSqft: (value) => set((s) => ({ area: { ...s.area, areaSqft: value } })),
       setDimensions: (length, width) => set((s) => ({ area: { ...s.area, length, width } })),
@@ -223,15 +281,36 @@ export const useQuotationStore = create<QuotationState>()(
 
       reset: () =>
         set({
-          stage: "area",
+          stage: "category",
+          category: null,
           quotationType: null,
           area: initialArea,
           packageId: null,
           custom: emptyCustom(),
           customStepIndex: 0,
           customer: initialCustomer,
+          wardrobeQuote: null,
+          tileInstallMethod: null,
+          tileQuote: null,
+          ceilingQuote: null,
         }),
     }),
-    { name: "kitchen-quotation-draft" }
+    {
+      name: "kitchen-quotation-draft",
+      version: 8,
+      migrate: (persisted) => {
+        const p = persisted as { customer?: Partial<CustomerState> };
+        return {
+          ...p,
+          stage: "category",
+          category: null,
+          wardrobeQuote: null,
+          tileInstallMethod: null,
+          tileQuote: null,
+          ceilingQuote: null,
+          customer: { ...initialCustomer, ...p.customer },
+        };
+      },
+    }
   )
 );

@@ -2,6 +2,12 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/design-studio/kitchen", "destination": "/design-studio-kitchen.html" },
-    { "source": "/design-studio/wardrobe", "destination": "/design-studio-wardrobe.html" }
+    { "source": "/design-studio/wardrobe", "destination": "/design-studio-wardrobe.html" },
+    { "source": "/design-studio/floor", "destination": "/design-studio-floor.html" },
+    { "source": "/design-studio/bed", "destination": "/design-studio-bed.html" },
+    { "source": "/design-studio/tv-panel", "destination": "/design-studio-tv-panel.html" },
+    { "source": "/design-studio/floor-walkthrough", "destination": "/index.html" },
+    { "source": "/inspiration", "destination": "/index.html" },
+    { "source": "/inspiration/:slug", "destination": "/index.html" }
   ]
 }

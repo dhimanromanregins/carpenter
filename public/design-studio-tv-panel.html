@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Design your TV panel and media wall in interactive 3D with Dhiman Interiors' TV Panel Design tool. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio/tv-panel" />
+<meta property="og:title" content="TV Panel Design — 3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Design your TV panel and media wall in interactive 3D." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio/tv-panel" />
+<title>TV Panel Design — 3D Design Studio | Dhiman Interiors</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --panel: #FFFFFF;
+    --ink: #2A2620;
+    --sub: #7A7468;
+    --line: #E4DFD3;
+    --accent: #B5714A;
+    --accent-dark: #8C5333;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); }
+
+  #mobile-block { display: none; }
+  #app { display: flex; }
+  @media (max-width: 767px) {
+    #app { display: none; }
+    #mobile-block {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; min-height: 100vh; padding: 40px 28px; text-align: center; background: var(--bg); color: var(--ink);
+    }
+    #mobile-block h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    #mobile-block p { font-size: 14px; color: var(--sub); line-height: 1.6; margin: 0; max-width: 320px; }
+    #mobile-block a { margin-top: 8px; padding: 11px 22px; border-radius: 999px; background: var(--accent-dark); color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; }
+  }
+
+  #app { position: relative; width: 100vw; height: 100vh; }
+  #canvas-holder { position: absolute; inset: 0; }
+  #canvas-holder canvas { display: block; cursor: pointer; }
+
+  #loading-veil {
+    position: absolute; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--sub); z-index: 5;
+  }
+
+  #top-bar {
+    position: absolute; top: 16px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
+  }
+  .top-btn-group { display: flex; gap: 6px; pointer-events: auto; }
+  .top-btn {
+    background: rgba(255,255,255,0.92); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); cursor: pointer; backdrop-filter: blur(4px);
+  }
+  .top-btn:hover { border-color: var(--accent); }
+
+  #power-badge {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--accent-dark); color: #fff; border: none; border-radius: 999px;
+    padding: 12px 24px; font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(140,83,51,0.35); pointer-events: auto;
+  }
+  #power-badge:hover { background: #74421F; }
+
+  #legend {
+    position: absolute; left: 16px; bottom: 16px; pointer-events: none;
+    background: rgba(255,255,255,0.9); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; font-size: 11.5px; color: var(--sub); max-width: 300px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div id="mobile-block">
+  <h1>TV Panel Design</h1>
+  <p>This interactive 3D TV panel viewer needs a bigger screen. Please switch to a tablet or larger device.</p>
+  <a href="/">&larr; Back to home</a>
+</div>
+
+<div id="app">
+  <div id="canvas-holder"></div>
+  <div id="loading-veil">Building the TV panel…</div>
+  <div id="top-bar">
+    <div class="top-btn-group">
+      <a class="top-btn" id="back-link" href="/design-studio/floor" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Back to floor plan</a>
+    </div>
+  </div>
+  <div id="legend">Bedroom TV feature wall — wood accent panel, floating console with a soundbar and a drawer, and ambient LED lighting. Click the screen (or the button) to turn it on, click the drawer to open it.</div>
+  <button id="power-badge">&#9211; Turn on TV</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'undefined') {
+    document.write('<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+  }
+</script>
+<script>
+(function(){
+
+  if (location.protocol === 'file:'){
+    document.getElementById('back-link').href = 'design-studio-floor.html';
+  }
+
+  // =================================================================
+  // Helpers
+  // =================================================================
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var num = parseInt(hex, 16);
+    return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(function(v){ return clamp(Math.round(v),0,255).toString(16).padStart(2,'0'); }).join('');
+  }
+  function shadeColor(hex, percent){
+    var c = hexToRgb(hex);
+    var amt = percent/100;
+    var r = amt >= 0 ? c.r + (255-c.r)*amt : c.r*(1+amt);
+    var g = amt >= 0 ? c.g + (255-c.g)*amt : c.g*(1+amt);
+    var b = amt >= 0 ? c.b + (255-c.b)*amt : c.b*(1+amt);
+    return rgbToHex(r,g,b);
+  }
+  function makeCanvasTexture(draw, w, h){
+    var c = document.createElement('canvas');
+    c.width = w || 256; c.height = h || 256;
+    draw(c.getContext('2d'), c.width, c.height);
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+  function slatTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      var cols = 10, colW = w/cols;
+      for (var i=0;i<cols;i++){
+        ctx.fillStyle = shadeColor(hex, (i%2===0) ? -4 : 4);
+        ctx.fillRect(i*colW, 0, colW-2, h);
+      }
+    }, 256, 256);
+  }
+  function homeScreenTexture(){
+    return makeCanvasTexture(function(ctx,w,h){
+      var grad = ctx.createLinearGradient(0,0,0,h);
+      grad.addColorStop(0, '#1B2A4A'); grad.addColorStop(1, '#0B1220');
+      ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.font = '700 46px -apple-system, Arial';
+      ctx.fillText('9:41', 30, 60);
+      ctx.font = '400 18px -apple-system, Arial';
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText('Tuesday, 2 September', 30, 88);
+      var tileColors = ['#3B6EA5','#8C5333','#4A7A63','#7A5C8C','#B5714A','#3B3F42'];
+      var cols = 6, tw = (w-60)/cols, th = 90;
+      for (var i=0;i<cols;i++){
+        ctx.fillStyle = tileColors[i];
+        ctx.beginPath();
+        var x = 30+i*tw, y = h-140;
+        if (ctx.roundRect) ctx.roundRect(x, y, tw-14, th, 12); else ctx.rect(x,y,tw-14,th);
+        ctx.fill();
+      }
+    }, 512, 288);
+  }
+
+  function box(w,h,d,mat,x,y,z,group){
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+    mesh.position.set(x,y,z);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    (group||scene).add(mesh);
+    return mesh;
+  }
+
+  // =================================================================
+  // Scene setup
+  // =================================================================
+  var holder = document.getElementById('canvas-holder');
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xEFEAE0);
+  scene.fog = new THREE.Fog(0xEFEAE0, 10, 30);
+
+  var camera = new THREE.PerspectiveCamera(40, holder.clientWidth/holder.clientHeight, 0.1, 200);
+  camera.position.set(2.6, 1.75, 3.3);
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(holder.clientWidth, holder.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  holder.appendChild(renderer.domElement);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.target.set(0, 1.2, 0);
+  controls.minDistance = 1.4;
+  controls.maxDistance = 10;
+  controls.maxPolarAngle = Math.PI/2 - 0.02;
+  controls.update();
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+  var hemi = new THREE.HemisphereLight(0xE9EDF5, 0xC7BFA9, 0.5);
+  scene.add(hemi);
+  var key = new THREE.DirectionalLight(0xfff2df, 1.15);
+  key.position.set(-3, 5, 4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -3; key.shadow.camera.right = 3;
+  key.shadow.camera.top = 3; key.shadow.camera.bottom = -3;
+  key.shadow.camera.far = 14;
+  key.shadow.bias = -0.0015;
+  scene.add(key);
+  var fillLight = new THREE.DirectionalLight(0xdce6ff, 0.3);
+  fillLight.position.set(3, 2, -3);
+  scene.add(fillLight);
+
+  var floorMat = new THREE.MeshStandardMaterial({ color: '#B98F5E', roughness: 0.65, map: slatTexture('#B98F5E') });
+  var floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(8,8), floorMat);
+  floorMesh.rotation.x = -Math.PI/2;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  var wallMat = new THREE.MeshStandardMaterial({ color: '#EDE8DC', roughness: 0.92 });
+  var wall = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.4), wallMat);
+  wall.position.set(0, 1.7, -0.02);
+  wall.receiveShadow = true;
+  scene.add(wall);
+
+  // =================================================================
+  // Materials
+  // =================================================================
+  var accentWoodMat = new THREE.MeshStandardMaterial({ color: '#8A6A47', roughness: 0.55, map: slatTexture('#8A6A47') });
+  var consoleWoodMat = new THREE.MeshStandardMaterial({ color: '#5A4530', roughness: 0.55 });
+  var bezelMat = new THREE.MeshStandardMaterial({ color: '#1B1B1D', roughness: 0.35, metalness: 0.5 });
+  var screenOffMat = new THREE.MeshStandardMaterial({ color: '#0A0C10', roughness: 0.12, metalness: 0.55 });
+  var screenOnMat = new THREE.MeshStandardMaterial({ color: '#101828', roughness: 0.25, metalness: 0.1, emissive: '#101828', emissiveIntensity: 0 });
+  var ledMat = new THREE.MeshStandardMaterial({ color: '#2A2A2A', roughness: 0.5, emissive: '#000000', emissiveIntensity: 0 });
+  var darkMat = new THREE.MeshStandardMaterial({ color: '#2B2B2E', roughness: 0.4 });
+  var handleMat = new THREE.MeshStandardMaterial({ color: '#B08D57', roughness: 0.3, metalness: 0.7 });
+  var speakerMat = new THREE.MeshStandardMaterial({ color: '#3A3A3C', roughness: 0.6 });
+
+  // =================================================================
+  // TV feature wall
+  // =================================================================
+  var root = new THREE.Group();
+  scene.add(root);
+
+  var PANEL_W = 1.8, PANEL_H = 1.6, PANEL_CY = 1.35;
+  box(1.8, 1.6, 0.06, accentWoodMat, 0, PANEL_CY, 0.03, root);
+
+  // Ambient LED strip along the panel edge.
+  var ledStrip = box(1.7, 0.02, 0.02, ledMat, 0, PANEL_CY - PANEL_H/2 - 0.03, 0.07, root);
+
+  // TV bezel + screen (screen swaps texture/emissive when powered on).
+  var homeTex = homeScreenTexture();
+  box(1.2, 0.7, 0.05, bezelMat, 0, 1.6, 0.07, root);
+  var screenMesh = box(1.1, 0.62, 0.012, screenOffMat, 0, 1.6, 0.10, root);
+  var tvStandNeck = box(0.05, 0.14, 0.05, bezelMat, 0, 1.6-0.35-0.06, 0.05, root);
+
+  // Floating console shelf + soundbar.
+  var shelfY = 1.08;
+  box(0.35, 0.06, 1.5, consoleWoodMat, 0.1, shelfY, 0.2, root);
+  box(0.06, 0.05, 0.9, speakerMat, 0.1, shelfY+0.055, 0.2, root);
+  [-1,1].forEach(function(s){
+    box(0.02, 0.04, 0.04, darkMat, 0.1, shelfY+0.08, 0.2 + s*0.42, root);
+  });
+
+  // Small floating cabinet with one interactive drawer, beside the console.
+  // The cabinet body is recessed a touch shorter than the drawer's closed
+  // position so the drawer front sits proud of it and is fully clickable
+  // (a solid box flush with the drawer would occlude the drawer's own
+  // front face from both raycasting and view).
+  var cabY = 0.55;
+  box(0.35, 0.34, 0.5, consoleWoodMat, -0.85, cabY, 0.075, root);
+  var drawer = new THREE.Group();
+  var drawerFront = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.3, 0.02), consoleWoodMat);
+  drawerFront.castShadow = true; drawerFront.receiveShadow = true;
+  var drawerHandle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.015, 0.015), handleMat);
+  drawerHandle.position.set(0, 0, 0.02);
+  drawerFront.add(drawerHandle);
+  var drawerBox = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.24, 0.42), new THREE.MeshStandardMaterial({ color:'#F5F2EA', roughness:0.7 }));
+  drawerBox.position.set(0, -0.01, -0.23);
+  drawerBox.castShadow = true; drawerBox.receiveShadow = true;
+  drawer.add(drawerFront, drawerBox);
+  var drawerClosedZ = 0.075 + 0.5/2 + 0.02, drawerOpenZ = drawerClosedZ + 0.34;
+  drawer.position.set(-0.85, cabY, drawerClosedZ);
+  root.add(drawer);
+
+  // =================================================================
+  // TV power interaction
+  // =================================================================
+  var powerOn = false, powerT = 0, powerTarget = 0;
+  var powerBadge = document.getElementById('power-badge');
+  function setPower(on){
+    powerOn = on;
+    powerTarget = on ? 1 : 0;
+    powerBadge.textContent = on ? '⏻ Turn off TV' : '⏻ Turn on TV';
+  }
+  powerBadge.addEventListener('click', function(){ setPower(!powerOn); });
+
+  // =================================================================
+  // Drawer interaction
+  // =================================================================
+  var drawerOpen = false, drawerAnim = { t: 0, target: 0 };
+  function setDrawer(open){
+    drawerOpen = open;
+    drawerAnim.target = open ? 1 : 0;
+  }
+
+  var raycaster = new THREE.Raycaster();
+  var pointer = new THREE.Vector2();
+  var downPos = null;
+  renderer.domElement.addEventListener('pointerdown', function(e){ downPos = { x:e.clientX, y:e.clientY }; });
+  renderer.domElement.addEventListener('pointerup', function(e){
+    if (!downPos) return;
+    var moved = Math.hypot(e.clientX-downPos.x, e.clientY-downPos.y);
+    downPos = null;
+    if (moved > 6) return;
+    var rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    pointer.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(pointer, camera);
+    var hits = raycaster.intersectObjects(root.children, true);
+    if (!hits.length) return;
+    var obj = hits[0].object;
+    if (obj === screenMesh){ setPower(!powerOn); return; }
+    var cursor = obj;
+    while (cursor){
+      if (cursor === drawer){ setDrawer(!drawerOpen); return; }
+      cursor = cursor.parent;
+    }
+  });
+
+  // =================================================================
+  // Resize + render loop
+  // =================================================================
+  function onResize(){
+    var w = holder.clientWidth, h = holder.clientHeight;
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  window.addEventListener('resize', onResize);
+  function animate(){
+    requestAnimationFrame(animate);
+    powerT += (powerTarget - powerT) * 0.08;
+    screenOnMat.emissiveIntensity = powerT * 0.9;
+    if (powerT > 0.02){
+      screenMesh.material = screenOnMat;
+      if (screenOnMat.map !== homeTex){ screenOnMat.map = homeTex; screenOnMat.emissiveMap = homeTex; screenOnMat.needsUpdate = true; }
+    } else {
+      screenMesh.material = screenOffMat;
+    }
+    ledMat.emissiveIntensity = powerT * 0.6;
+    ledMat.emissive.set(powerT > 0.02 ? '#F2C879' : '#000000');
+
+    drawerAnim.t += (drawerAnim.target - drawerAnim.t) * 0.09;
+    drawer.position.z = drawerClosedZ + (drawerOpenZ - drawerClosedZ) * drawerAnim.t;
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  document.getElementById('loading-veil').style.display = 'none';
+  window.__tvDebug = { camera: camera, controls: controls, scene: scene, setPower: setPower, setDrawer: setDrawer };
+})();
+</script>
+</body>
+</html>

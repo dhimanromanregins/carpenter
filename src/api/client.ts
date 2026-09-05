@@ -14,6 +14,10 @@ if (!RAW_BASE_URL) {
 
 const BASE_URL = (RAW_BASE_URL ?? "http://localhost:8000/api").replace(/\/+$/, "");
 
+// Exposed for the rare case a caller needs the raw URL (e.g. linking directly
+// to a file-download endpoint) instead of going through apiClient's JSON parsing.
+export const API_BASE_URL = BASE_URL;
+
 export class ApiError extends Error {
   code: string;
   status: number;

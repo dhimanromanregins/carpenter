@@ -8,6 +8,8 @@ interface SectionHeadingProps {
   description?: string;
   align?: "left" | "center";
   className?: string;
+  /** Heading level for `title` — defaults to h2. Use h1 only on pages that have no other h1. */
+  headingLevel?: "h1" | "h2";
 }
 
 export function SectionHeading({
@@ -16,6 +18,7 @@ export function SectionHeading({
   description,
   align = "left",
   className,
+  headingLevel = "h2",
 }: SectionHeadingProps) {
   return (
     <div
@@ -34,7 +37,7 @@ export function SectionHeading({
         </RevealOnScroll>
       )}
       <AnimatedText
-        as="h2"
+        as={headingLevel}
         text={title}
         by="word"
         className="text-4xl leading-[1.05] sm:text-5xl md:text-6xl lg:text-7xl"

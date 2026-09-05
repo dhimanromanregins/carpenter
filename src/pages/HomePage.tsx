@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSeo } from "@/hooks/useSeo";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingContact } from "@/components/layout/FloatingContact";
 import { Hero } from "@/components/sections/Hero";
@@ -15,6 +16,12 @@ import { useLenis, getLenis } from "@/hooks/useLenis";
 
 export function HomePage() {
   useLenis();
+  useSeo({
+    title: "Luxury Carpentry & Interior Design in Zirakpur, Chandigarh & Mohali",
+    description:
+      "Dhiman Interiors crafts bespoke modular kitchens, wardrobes, TV panels and full home interiors for clients across Zirakpur, Chandigarh and Mohali. Book a free site visit.",
+    path: "/",
+  });
 
   useEffect(() => {
     if (!window.location.hash) return;

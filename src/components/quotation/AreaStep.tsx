@@ -15,7 +15,17 @@ const UNIT_LABELS: Record<DimensionUnit, string> = {
   CENTIMETERS: "Centimeters",
 };
 
-export function AreaStep({ onContinue }: { onContinue: () => void }) {
+interface AreaStepProps {
+  onContinue: () => void;
+  title?: string;
+  areaFieldLabel?: string;
+}
+
+export function AreaStep({
+  onContinue,
+  title = "How would you like to enter your kitchen size?",
+  areaFieldLabel = "Kitchen Area (sq.ft.)",
+}: AreaStepProps) {
   const { data: config } = useQuotationConfig();
   const area = useQuotationStore((s) => s.area);
   const setAreaMode = useQuotationStore((s) => s.setAreaMode);
@@ -43,7 +53,7 @@ export function AreaStep({ onContinue }: { onContinue: () => void }) {
       applyAreaResult(result.area_sqft, result.running_feet);
       onContinue();
     } catch {
-      setError("Couldn't calculate your kitchen area. Please try again.");
+      setError("Couldn't calculate the area. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,7 +61,7 @@ export function AreaStep({ onContinue }: { onContinue: () => void }) {
 
   return (
     <GlassCard className="mx-auto max-w-xl p-8 md:p-10">
-      <h2 className="font-display text-2xl text-cream md:text-3xl">How would you like to enter your kitchen size?</h2>
+      <h2 className="font-display text-2xl text-cream md:text-3xl">{title}</h2>
 
       <div className="mt-6 flex gap-3">
         {(["total_area", "dimensions"] as const).map((mode) => (
@@ -72,7 +82,7 @@ export function AreaStep({ onContinue }: { onContinue: () => void }) {
       <div className="mt-8">
         {area.mode === "total_area" ? (
           <label className="flex flex-col gap-2">
-            <span className="text-[10px] uppercase tracking-widest text-grey">Kitchen Area (sq.ft.)</span>
+            <span className="text-[10px] uppercase tracking-widest text-grey">{areaFieldLabel}</span>
             <NumericField
               value={area.areaSqft ?? undefined}
               onChange={(v) => setAreaSqft(v ?? null)}

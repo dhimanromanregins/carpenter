@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Kitchen Designer — Design Studio</title>
+<meta name="description" content="Design your dream modular kitchen in interactive 3D with Dhiman Interiors' Kitchen Designer tool. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio/kitchen" />
+<meta property="og:title" content="Kitchen Designer — 3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Design your dream modular kitchen in interactive 3D." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio/kitchen" />
+<title>Kitchen Designer — 3D Design Studio | Dhiman Interiors</title>
 <style>
   :root{
     --bg: #F4F1EA;
@@ -482,7 +488,7 @@
     <div id="loading-veil">Setting up the kitchen…</div>
     <div id="top-bar">
       <div class="top-btn-group">
-        <a class="top-btn" href="/design-studio" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Design Studio</a>
+        <a class="top-btn" id="back-link" href="/design-studio" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Design Studio</a>
         <button class="top-btn active" data-view="perspective">Perspective</button>
         <button class="top-btn" data-view="top">Top view</button>
         <button class="top-btn" data-view="front">Front view</button>
@@ -2635,6 +2641,23 @@
   // Initial layout — a fuller U-shape run plus an island in a contrasting
   // walnut tone against the sage cabinetry, so the first thing a visitor
   // sees reads as a finished, styled kitchen rather than a blank default.
+  // Arriving from the floor-plan page (?w=&d=&from=floor) pre-sizes the
+  // room to that floor's real kitchen footprint and points "back" at it.
+  var urlParams = new URLSearchParams(window.location.search);
+  var urlW = parseFloat(urlParams.get('w'));
+  var urlD = parseFloat(urlParams.get('d'));
+  if (!isNaN(urlW) && !isNaN(urlD)){
+    ROOM.width = clamp(urlW, 2.2, 10);
+    ROOM.depth = clamp(urlD, 2.2, 9);
+    document.getElementById('room-width').value = ROOM.width;
+    document.getElementById('room-depth').value = ROOM.depth;
+  }
+  if (urlParams.get('from') === 'floor'){
+    var backLink = document.getElementById('back-link');
+    backLink.href = (location.protocol === 'file:') ? 'design-studio-floor.html' : '/design-studio/floor';
+    backLink.textContent = '← Back to floor plan';
+  }
+
   applyLightPreset('morning');
   generateLayout(ROOM.width, ROOM.depth, currentShape);
   addModule('island');

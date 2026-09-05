@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Design your dream bed and bedroom layout in interactive 3D with Dhiman Interiors' Bed Design tool. Serving Zirakpur, Chandigarh and Mohali." />
+<link rel="canonical" href="https://dhimaninteriors.in/design-studio/bed" />
+<meta property="og:title" content="Bed Design — 3D Design Studio | Dhiman Interiors" />
+<meta property="og:description" content="Design your dream bed and bedroom layout in interactive 3D." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dhimaninteriors.in/design-studio/bed" />
+<title>Bed Design — 3D Design Studio | Dhiman Interiors</title>
+<style>
+  :root{
+    --bg: #F4F1EA;
+    --panel: #FFFFFF;
+    --ink: #2A2620;
+    --sub: #7A7468;
+    --line: #E4DFD3;
+    --accent: #B5714A;
+    --accent-dark: #8C5333;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); }
+
+  #mobile-block { display: none; }
+  #app { display: flex; }
+  @media (max-width: 767px) {
+    #app { display: none; }
+    #mobile-block {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; min-height: 100vh; padding: 40px 28px; text-align: center; background: var(--bg); color: var(--ink);
+    }
+    #mobile-block h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    #mobile-block p { font-size: 14px; color: var(--sub); line-height: 1.6; margin: 0; max-width: 320px; }
+    #mobile-block a { margin-top: 8px; padding: 11px 22px; border-radius: 999px; background: var(--accent-dark); color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; }
+  }
+
+  #app { position: relative; width: 100vw; height: 100vh; }
+  #canvas-holder { position: absolute; inset: 0; }
+  #canvas-holder canvas { display: block; cursor: pointer; }
+
+  #loading-veil {
+    position: absolute; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--sub); z-index: 5;
+  }
+
+  #top-bar {
+    position: absolute; top: 16px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
+  }
+  .top-btn-group { display: flex; gap: 6px; pointer-events: auto; }
+  .top-btn {
+    background: rgba(255,255,255,0.92); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); cursor: pointer; backdrop-filter: blur(4px);
+  }
+  .top-btn:hover { border-color: var(--accent); }
+  .top-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  #lift-badge {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--accent-dark); color: #fff; border: none; border-radius: 999px;
+    padding: 12px 24px; font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(140,83,51,0.35); pointer-events: auto;
+  }
+  #lift-badge:hover { background: #74421F; }
+
+  #legend {
+    position: absolute; left: 16px; bottom: 16px; pointer-events: none;
+    background: rgba(255,255,255,0.9); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; font-size: 11.5px; color: var(--sub); max-width: 300px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div id="mobile-block">
+  <h1>Bed Design</h1>
+  <p>This interactive 3D bed viewer needs a bigger screen. Please switch to a tablet or larger device.</p>
+  <a href="/">&larr; Back to home</a>
+</div>
+
+<div id="app">
+  <div id="canvas-holder"></div>
+  <div id="loading-veil">Building the bed…</div>
+  <div id="top-bar">
+    <div class="top-btn-group">
+      <a class="top-btn" id="back-link" href="/design-studio/floor" style="text-decoration:none; display:inline-flex; align-items:center;">&larr; Back to floor plan</a>
+    </div>
+  </div>
+  <div id="legend">Storage bed with a gas-hydraulic lift. Click the button, or click the mattress itself, to raise or lower it and see the storage compartment underneath.</div>
+  <button id="lift-badge">&uarr; Open bed (hydraulic lift)</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  if (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'undefined') {
+    document.write('<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+  }
+</script>
+<script>
+(function(){
+
+  // =================================================================
+  // Color + texture helpers
+  // =================================================================
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var num = parseInt(hex, 16);
+    return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(function(v){ return clamp(Math.round(v),0,255).toString(16).padStart(2,'0'); }).join('');
+  }
+  function shadeColor(hex, percent){
+    var c = hexToRgb(hex);
+    var amt = percent/100;
+    var r = amt >= 0 ? c.r + (255-c.r)*amt : c.r*(1+amt);
+    var g = amt >= 0 ? c.g + (255-c.g)*amt : c.g*(1+amt);
+    var b = amt >= 0 ? c.b + (255-c.b)*amt : c.b*(1+amt);
+    return rgbToHex(r,g,b);
+  }
+  function makeCanvasTexture(draw, w, h){
+    var c = document.createElement('canvas');
+    c.width = w || 256; c.height = h || 256;
+    draw(c.getContext('2d'), c.width, c.height);
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+  function fabricTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      ctx.fillStyle = hex; ctx.fillRect(0,0,w,h);
+      ctx.globalAlpha = 0.06;
+      for (var i=0;i<1400;i++){
+        ctx.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
+        ctx.fillRect(Math.random()*w, Math.random()*h, 1, 1);
+      }
+      ctx.globalAlpha = 1;
+    }, 256, 256);
+  }
+  function quiltTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      ctx.fillStyle = hex; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle = shadeColor(hex, -14);
+      ctx.lineWidth = 2;
+      var cell = 32;
+      for (var x=0;x<=w;x+=cell){
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+      }
+      for (var y=0;y<=h;y+=cell){
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+      }
+    }, 256, 256);
+  }
+  function woodTexture(hex){
+    return makeCanvasTexture(function(ctx,w,h){
+      var rows = 6, plankH = h/rows;
+      for (var r=0;r<rows;r++){
+        ctx.fillStyle = shadeColor(hex, (Math.random()-0.5)*14);
+        ctx.fillRect(0, r*plankH, w, plankH);
+      }
+    }, 256, 256);
+  }
+
+  // Opening this page as a local file (file://…) has no server-side
+  // rewrites, so the pretty "/design-studio/floor" route 404s — fall back
+  // to the actual filename (same folder) in that case.
+  if (location.protocol === 'file:'){
+    document.getElementById('back-link').href = 'design-studio-floor.html';
+  }
+
+  function box(w,h,d,mat,x,y,z,group){
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+    mesh.position.set(x,y,z);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    (group||scene).add(mesh);
+    return mesh;
+  }
+
+  // =================================================================
+  // Scene setup
+  // =================================================================
+  var holder = document.getElementById('canvas-holder');
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xEFEAE0);
+  scene.fog = new THREE.Fog(0xEFEAE0, 10, 34);
+
+  var camera = new THREE.PerspectiveCamera(42, holder.clientWidth/holder.clientHeight, 0.1, 200);
+  camera.position.set(3.4, 2.7, 3.6);
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(holder.clientWidth, holder.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  holder.appendChild(renderer.domElement);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.target.set(0, 0.6, 0.1);
+  controls.minDistance = 1.5;
+  controls.maxDistance = 12;
+  controls.maxPolarAngle = Math.PI/2 - 0.02;
+  controls.update();
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.32));
+  var hemi = new THREE.HemisphereLight(0xE9EDF5, 0xC7BFA9, 0.55);
+  scene.add(hemi);
+  var key = new THREE.DirectionalLight(0xfff2df, 1.25);
+  key.position.set(-4, 6, 4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -4; key.shadow.camera.right = 4;
+  key.shadow.camera.top = 4; key.shadow.camera.bottom = -4;
+  key.shadow.camera.far = 16;
+  key.shadow.bias = -0.0015;
+  scene.add(key);
+  var fillLight = new THREE.DirectionalLight(0xdce6ff, 0.35);
+  fillLight.position.set(4, 3, -3);
+  scene.add(fillLight);
+
+  var floorMat = new THREE.MeshStandardMaterial({ color: '#B98F5E', roughness: 0.65, map: woodTexture('#B98F5E') });
+  var floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(9,9), floorMat);
+  floorMesh.rotation.x = -Math.PI/2;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  // =================================================================
+  // Materials
+  // =================================================================
+  var frameWoodMat = new THREE.MeshStandardMaterial({ color: '#5A4530', roughness: 0.55, map: woodTexture('#5A4530') });
+  var frameWoodMatLight = new THREE.MeshStandardMaterial({ color: '#7A5C3C', roughness: 0.55, map: woodTexture('#7A5C3C') });
+  var headboardMat = new THREE.MeshStandardMaterial({ color: '#B9A489', roughness: 0.75 });
+  var buttonMat = new THREE.MeshStandardMaterial({ color: '#8A7860', roughness: 0.6 });
+  var mattressMat = new THREE.MeshStandardMaterial({ color: '#F4F1E9', roughness: 0.85, map: fabricTexture('#F4F1E9') });
+  var sheetMat = new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.8, map: fabricTexture('#FFFFFF') });
+  var duvetMat = new THREE.MeshStandardMaterial({ color: '#8FA6A0', roughness: 0.85, map: quiltTexture('#8FA6A0') });
+  var pillowMat = new THREE.MeshStandardMaterial({ color: '#FBFAF6', roughness: 0.8, map: fabricTexture('#FBFAF6') });
+  var pillowAccentMat = new THREE.MeshStandardMaterial({ color: '#C7896A', roughness: 0.8, map: fabricTexture('#C7896A') });
+  var metalMat = new THREE.MeshStandardMaterial({ color: '#3B3B3E', roughness: 0.35, metalness: 0.75 });
+  var chromeMat = new THREE.MeshStandardMaterial({ color: '#C9CCD1', roughness: 0.2, metalness: 0.9 });
+  var storageMat = new THREE.MeshStandardMaterial({ color: '#2C2A26', roughness: 0.9 });
+  var storedFabricMat = new THREE.MeshStandardMaterial({ color: '#B5714A', roughness: 0.8, map: fabricTexture('#B5714A') });
+
+  // =================================================================
+  // Bed dimensions (meters)
+  // =================================================================
+  var BED_W = 1.8, BED_D = 2.1;        // outer footprint
+  var LEG_H = 0.12;                     // legs under the base frame
+  var FRAME_H = 0.34;                   // base frame height (storage depth)
+  var RAIL_T = 0.06;                    // frame side-rail thickness
+  var MATTRESS_INSET = 0.02;            // small reveal between mattress edge and outer frame
+  var PLATFORM_T = 0.10;                // slat platform thickness
+  var MATTRESS_H = 0.24;
+  var frameTopY = LEG_H + FRAME_H;      // world Y of the top edge of the base frame
+
+  var root = new THREE.Group();
+  scene.add(root);
+
+  // ---- Legs -------------------------------------------------------
+  var legInset = 0.12;
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, LEG_H, 12), frameWoodMat);
+    mesh.position.set(s[0]*(BED_W/2-legInset), LEG_H/2, s[1]*(BED_D/2-legInset));
+    mesh.castShadow = true;
+    root.add(mesh);
+  });
+
+  // ---- Base frame (fixed) — side rails + floor of the storage well ---
+  var baseGroup = new THREE.Group();
+  baseGroup.position.set(0, LEG_H, 0);
+  root.add(baseGroup);
+
+  box(BED_W, RAIL_T, BED_D, frameWoodMat, 0, RAIL_T/2, 0, baseGroup); // base plinth
+  // Storage-well floor (recessed) and dark interior walls, visible once the
+  // platform lifts.
+  var wellY = RAIL_T + 0.015;
+  box(BED_W-2*RAIL_T, 0.02, BED_D-2*RAIL_T, storageMat, 0, wellY, 0, baseGroup);
+  var wellWallH = FRAME_H - RAIL_T - 0.03;
+  box(BED_W-2*RAIL_T, wellWallH, 0.02, storageMat, 0, wellY+wellWallH/2, -(BED_D/2-RAIL_T), baseGroup);
+  box(BED_W-2*RAIL_T, wellWallH, 0.02, storageMat, 0, wellY+wellWallH/2, (BED_D/2-RAIL_T)-0.02, baseGroup);
+  box(0.02, wellWallH, BED_D-2*RAIL_T, storageMat, -(BED_W/2-RAIL_T), wellY+wellWallH/2, 0, baseGroup);
+  box(0.02, wellWallH, BED_D-2*RAIL_T, storageMat, (BED_W/2-RAIL_T)-0.02, wellY+wellWallH/2, 0, baseGroup);
+  // Side + foot rails standing up around the storage well (fixed, does not lift).
+  box(BED_W, FRAME_H, RAIL_T, frameWoodMatLight, 0, FRAME_H/2, -(BED_D/2-RAIL_T/2), baseGroup);
+  box(BED_W, FRAME_H, RAIL_T, frameWoodMatLight, 0, FRAME_H/2, (BED_D/2-RAIL_T/2), baseGroup);
+  box(RAIL_T, FRAME_H, BED_D, frameWoodMatLight, -(BED_W/2-RAIL_T/2), FRAME_H/2, 0, baseGroup);
+  box(RAIL_T, FRAME_H, BED_D, frameWoodMatLight, (BED_W/2-RAIL_T/2), FRAME_H/2, 0, baseGroup);
+
+  // A couple of stored items in the well, for detail.
+  box(0.5, 0.12, 0.4, storedFabricMat, -0.45, wellY+0.06+0.02, -0.55, baseGroup);
+  box(0.3, 0.1, 0.28, pillowMat, 0.4, wellY+0.05+0.02, -0.45, baseGroup);
+
+  // ---- Headboard (fixed to the base, does not lift) ----------------
+  var headboardGroup = new THREE.Group();
+  headboardGroup.position.set(0, FRAME_H, -(BED_D/2));
+  baseGroup.add(headboardGroup);
+  var HB_H = 0.85, HB_T = 0.09;
+  box(BED_W+0.08, HB_H, HB_T, headboardMat, 0, HB_H/2, -HB_T/2, headboardGroup);
+  // Tufted button grid.
+  for (var bx=-2; bx<=2; bx++){
+    for (var by=0; by<3; by++){
+      var bm = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 8), buttonMat);
+      bm.position.set(bx*0.32, 0.18+by*0.24, -HB_T-0.005);
+      headboardGroup.add(bm);
+    }
+  }
+  // Slim headboard legs to the floor.
+  [-1,1].forEach(function(s){
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, frameTopY+HB_H*0.15, 8), frameWoodMat);
+    mesh.position.set(s*(BED_W/2-0.05), -(frameTopY+HB_H*0.15)/2 + HB_H*0.02, -0.02);
+    headboardGroup.add(mesh);
+  });
+
+  // ---- Lifting platform (mattress assembly) — hinged at the head end ---
+  var platform = new THREE.Group();
+  platform.position.set(0, FRAME_H, -(BED_D/2 - MATTRESS_INSET)); // hinge line, at the headboard side
+  baseGroup.add(platform);
+
+  var innerW = BED_W - 2*MATTRESS_INSET, innerD = BED_D - 2*MATTRESS_INSET - 0.01;
+
+  // Slats.
+  var slatCount = 9;
+  for (var si=0; si<slatCount; si++){
+    var sz = (si+0.5)/slatCount * innerD;
+    box(innerW-0.04, 0.02, innerD/slatCount-0.015, frameWoodMatLight, 0, 0.01, sz, platform);
+  }
+  // Mattress (base pad + pillow-top layer).
+  box(innerW-0.02, MATTRESS_H*0.7, innerD-0.02, mattressMat, 0, PLATFORM_T-0.02+MATTRESS_H*0.35, innerD/2, platform);
+  box(innerW-0.06, MATTRESS_H*0.35, innerD-0.06, sheetMat, 0, PLATFORM_T-0.02+MATTRESS_H*0.7+MATTRESS_H*0.175, innerD/2, platform);
+  var mattressTopY = PLATFORM_T-0.02+MATTRESS_H;
+
+  // Pillows near the headboard.
+  [-1,1].forEach(function(s){
+    var p = box(0.55, 0.16, 0.4, pillowMat, s*0.42, mattressTopY+0.08, 0.32, platform);
+    p.rotation.z = s*0.03;
+    box(0.55, 0.02, 0.4, pillowAccentMat, s*0.42, mattressTopY+0.16, 0.32, platform);
+  });
+
+  // Duvet: flat run covering the lower two-thirds, folded back near the
+  // pillows to show the sheet underneath.
+  var duvetFoldZ = innerD*0.42;
+  box(innerW-0.03, 0.1, innerD-duvetFoldZ-0.02, duvetMat, 0, mattressTopY+0.05, duvetFoldZ + (innerD-duvetFoldZ)/2 + 0.01, platform);
+  // Rolled-back fold at the head end, like a duvet turned down over itself.
+  var rollMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, innerW-0.05, 16), duvetMat);
+  rollMesh.rotation.z = Math.PI/2;
+  rollMesh.position.set(0, mattressTopY+0.09, duvetFoldZ-0.06);
+  rollMesh.castShadow = true;
+  platform.add(rollMesh);
+
+  // ---- Hydraulic gas struts (two, either side, dynamically stretched) ---
+  var strutUnit = 1; // CylinderGeometry default height
+  function makeStrut(mat, radius){
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, strutUnit, 10), mat);
+    mesh.castShadow = true;
+    // pointToPoint() sets WORLD-space coordinates, so this must be a
+    // direct child of the scene, not of baseGroup (which carries its own
+    // offset that would otherwise be applied a second time).
+    scene.add(mesh);
+    return mesh;
+  }
+  var strutOuter = [makeStrut(metalMat, 0.022), makeStrut(metalMat, 0.022)];
+  var strutInner = [makeStrut(chromeMat, 0.012), makeStrut(chromeMat, 0.012)];
+
+  // Fixed anchor (on the base frame, near the foot-half of the well) and the
+  // matching moving anchor (on the underside of the platform) for each side.
+  var anchorFixedLocal = [
+    new THREE.Vector3(-(innerW/2-0.05), RAIL_T+0.05, -(BED_D/2-RAIL_T) + innerD*0.62),
+    new THREE.Vector3( (innerW/2-0.05), RAIL_T+0.05, -(BED_D/2-RAIL_T) + innerD*0.62)
+  ];
+  var anchorMovingLocal = [
+    new THREE.Vector3(-(innerW/2-0.05), -0.02, innerD*0.62 - (BED_D/2-RAIL_T)*0 ),
+    new THREE.Vector3( (innerW/2-0.05), -0.02, innerD*0.62 - (BED_D/2-RAIL_T)*0 )
+  ];
+  // anchorMovingLocal is expressed in the platform's own local space
+  // (origin at the hinge), so its z is simply along the platform's run.
+  anchorMovingLocal[0].z = innerD*0.62;
+  anchorMovingLocal[1].z = innerD*0.62;
+
+  function pointToPoint(mesh, a, b, unitLen){
+    var dir = new THREE.Vector3().subVectors(b, a);
+    var len = dir.length();
+    var mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+    mesh.position.copy(mid);
+    mesh.scale.y = Math.max(len, 0.001) / unitLen;
+    var axis = new THREE.Vector3(0,1,0);
+    var dirN = dir.clone().normalize();
+    mesh.quaternion.setFromUnitVectors(axis, dirN);
+  }
+
+  function updateStruts(){
+    for (var i=0;i<2;i++){
+      var worldFixed = baseGroup.localToWorld(anchorFixedLocal[i].clone());
+      var worldMoving = platform.localToWorld(anchorMovingLocal[i].clone());
+      pointToPoint(strutOuter[i], worldFixed, worldMoving, strutUnit);
+      // Inner chrome rod: the extended portion, roughly the far 45% of the strut.
+      var innerA = new THREE.Vector3().lerpVectors(worldFixed, worldMoving, 0.55);
+      pointToPoint(strutInner[i], innerA, worldMoving, strutUnit);
+    }
+  }
+
+  // Small pivot hinges where the platform meets the base.
+  [-1,1].forEach(function(s){
+    var mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, innerW*0+0.08, 10), chromeMat);
+    mesh.rotation.z = Math.PI/2;
+    mesh.position.set(s*(innerW/2-0.03), FRAME_H, -(BED_D/2-RAIL_T));
+    baseGroup.add(mesh);
+  });
+
+  // =================================================================
+  // Open / close interaction
+  // =================================================================
+  var MAX_ANGLE = THREE.MathUtils.degToRad(62);
+  var angle = 0, targetAngle = 0, isOpen = false;
+  var badge = document.getElementById('lift-badge');
+  function setOpen(open){
+    isOpen = open;
+    targetAngle = open ? MAX_ANGLE : 0;
+    badge.textContent = open ? '↓ Close bed' : '↑ Open bed (hydraulic lift)';
+  }
+  badge.addEventListener('click', function(){ setOpen(!isOpen); });
+
+  var raycaster = new THREE.Raycaster();
+  var pointer = new THREE.Vector2();
+  var downPos = null;
+  renderer.domElement.addEventListener('pointerdown', function(e){ downPos = { x:e.clientX, y:e.clientY }; });
+  renderer.domElement.addEventListener('pointerup', function(e){
+    if (!downPos) return;
+    var moved = Math.hypot(e.clientX-downPos.x, e.clientY-downPos.y);
+    downPos = null;
+    if (moved > 6) return; // was a drag/orbit, not a click
+    var rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    pointer.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(pointer, camera);
+    var hits = raycaster.intersectObjects(root.children, true);
+    if (hits.length) setOpen(!isOpen);
+  });
+
+  // =================================================================
+  // Resize + render loop
+  // =================================================================
+  function onResize(){
+    var w = holder.clientWidth, h = holder.clientHeight;
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  window.addEventListener('resize', onResize);
+  function animate(){
+    requestAnimationFrame(animate);
+    angle += (targetAngle - angle) * 0.07;
+    platform.rotation.x = -angle;
+    updateStruts();
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  updateStruts();
+  animate();
+
+  document.getElementById('loading-veil').style.display = 'none';
+  window.__bedDebug = { camera: camera, controls: controls, scene: scene, setOpen: setOpen };
+})();
+</script>
+</body>
+</html>
