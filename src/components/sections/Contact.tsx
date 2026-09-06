@@ -107,7 +107,7 @@ export function Contact() {
                 <FaPhoneAlt className="mt-1 text-gold" />
                 <div>
                   <p className="text-sm text-cream">Call Us</p>
-                  <p className="mt-1 text-sm text-grey">+91 70185 95304</p>
+                  <p className="mt-1 text-sm text-grey">+91 77175 45979</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">

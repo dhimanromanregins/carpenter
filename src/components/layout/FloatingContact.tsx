@@ -10,7 +10,7 @@ export function FloatingContact() {
       className="fixed bottom-8 right-6 z-40 flex flex-col gap-3"
     >
       <a
-        href="https://wa.me/917018595304"
+        href="https://wa.me/917717545979"
         target="_blank"
         rel="noreferrer"
         data-cursor="Chat"
@@ -20,7 +20,7 @@ export function FloatingContact() {
         <FaWhatsapp size={22} />
       </a>
       <a
-        href="tel:+917018595304"
+        href="tel:+917717545979"
         data-cursor="Call"
         aria-label="Call now"
         className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-gold/40 bg-ink/80 text-gold backdrop-blur transition-transform hover:scale-110"

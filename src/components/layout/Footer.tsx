@@ -90,7 +90,7 @@ export function Footer() {
             </p>
             <ul className="space-y-2 break-words text-sm text-grey">
               <li>contact@dhimaninteriors.in</li>
-              <li>+91 70185 95304</li>
+              <li>+91 77175 45979</li>
               <li>Highland Marg, Highway, Patiala, Zirakpur, Punjab 140603</li>
             </ul>
           </div>

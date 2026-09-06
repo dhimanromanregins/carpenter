@@ -13,7 +13,7 @@ LOGO_PATH = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
 LOGO_ASPECT = 500 / 1000  # height / width of the source logo file
 
 COMPANY_ADDRESS = "Highland Marg, Highway, Patiala, Zirakpur, Punjab 140603"
-COMPANY_PHONE = "+91 70185 95304"
+COMPANY_PHONE = "+91 77175 45979"
 COMPANY_EMAIL = "contact@dhimaninteriors.in"
 
 
