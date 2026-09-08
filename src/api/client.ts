@@ -55,16 +55,18 @@ interface RequestOptions {
   params?: QueryParams;
   body?: unknown;
   signal?: AbortSignal;
+  /** Extra per-request headers, e.g. the admin key on the leads endpoints. */
+  headers?: Record<string, string>;
 }
 
 async function request<T>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
-  { params, body, signal }: RequestOptions = {}
+  { params, body, signal, headers: extraHeaders }: RequestOptions = {}
 ): Promise<T> {
   const url = `${BASE_URL}/${path.replace(/^\/+/, "")}${toQueryString(params)}`;
 
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...extraHeaders };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
 
@@ -110,10 +112,12 @@ async function request<T>(
 export const apiClient = {
   get: <T>(path: string, options?: Omit<RequestOptions, "body">) =>
     request<T>("GET", path, options),
-  post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "body" | "params">) =>
+  post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "body">) =>
     request<T>("POST", path, { ...options, body }),
-  put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "body" | "params">) =>
+  put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "body">) =>
     request<T>("PUT", path, { ...options, body }),
+  patch: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, "body">) =>
+    request<T>("PATCH", path, { ...options, body }),
   delete: <T>(path: string, options?: Omit<RequestOptions, "body">) =>
     request<T>("DELETE", path, options),
 };

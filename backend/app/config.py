@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./carpenter.db"
     cors_origins: str = "http://localhost:5173"
+    admin_api_key: str = ""
     gemini_api_key: str = ""
     gemini_image_model: str = "gemini-2.5-flash-image"
 

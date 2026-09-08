@@ -6,6 +6,8 @@ import { FloorWalkthroughPage } from "@/pages/FloorWalkthroughPage";
 import { DesignStudioToolPage } from "@/pages/DesignStudioToolPage";
 import { InspirationPage } from "@/pages/InspirationPage";
 import { InspirationCategoryPage } from "@/pages/InspirationCategoryPage";
+import { LeadPage } from "@/pages/LeadPage";
+import { LeadsAdminPage } from "@/pages/admin/LeadsAdminPage";
 import { LocalSeoPage } from "@/pages/LocalSeoPage";
 import { ServiceSeoPage } from "@/pages/ServiceSeoPage";
 import { QuotationBuilderPage } from "@/pages/quotation/QuotationBuilderPage";
@@ -17,8 +19,10 @@ import { CeilingQuotationResultPage } from "@/pages/quotation/CeilingQuotationRe
 function App() {
   const location = useLocation();
   // These are full-bleed 3D tools with their own back-navigation and toolbars —
-  // the site's fixed top Navbar would visually collide with them.
-  const hideNavbar = location.pathname.startsWith("/design-studio");
+  // the site's fixed top Navbar would visually collide with them. The admin
+  // dashboard is an internal tool and has no business showing site navigation.
+  const hideNavbar =
+    location.pathname.startsWith("/design-studio") || location.pathname.startsWith("/admin");
 
   return (
     <>
@@ -94,6 +98,8 @@ function App() {
           }
         />
         <Route path="/design-studio/floor-walkthrough" element={<FloorWalkthroughPage />} />
+        <Route path="/free-design-consultation" element={<LeadPage />} />
+        <Route path="/admin/leads" element={<LeadsAdminPage />} />
         <Route path="/inspiration" element={<InspirationPage />} />
         <Route path="/inspiration/:slug" element={<InspirationCategoryPage />} />
         <Route path="/interior-designer-zirakpur" element={<LocalSeoPage slug="zirakpur" />} />
