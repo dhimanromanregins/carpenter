@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 
 export function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
+  // Resolved synchronously on the first render — starting at `false` and
+  // correcting in the effect makes a mobile visitor briefly render the
+  // desktop branch, which for heavy branches (video, 3D) means a layout jump
+  // and a wasted fetch before it unmounts.
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches
+  );
 
   useEffect(() => {
     const mql = window.matchMedia(query);

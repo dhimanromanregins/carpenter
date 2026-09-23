@@ -17,12 +17,6 @@ const VH_PER_SECOND_OF_VIDEO = 55;
 const MIN_SCROLL_VH = 300;
 const MAX_SCROLL_VH = 700;
 
-// Touch scroll gestures cover less distance per swipe than a mouse wheel, so
-// the same vh-per-second pacing feels far longer to scrub through on a phone.
-// Scale both knobs down below the tablet breakpoint.
-const VH_PER_SECOND_OF_VIDEO_MOBILE = 35;
-const MAX_SCROLL_VH_MOBILE = 450;
-
 // How quickly the displayed frame chases the scroll-derived target frame,
 // per animation frame (0-1). Lower = dreamier/more trailing, higher = more
 // directly "glued" to the scrollbar. ~0.1-0.18 reads as cinematic without
@@ -39,6 +33,10 @@ const SNAP_EPSILON_S = 0.02;
  * how far the user has scrolled through it — not by autoplay. Scrolling
  * down scrubs forward, scrolling up scrubs backward, and the same scroll
  * position always maps to the same frame.
+ *
+ * Desktop only. On phones the section renders nothing: frame-accurate
+ * scrubbing needs a multi-MB download over mobile data and reads poorly
+ * under touch scrolling, where a swipe covers far less distance than a wheel.
  */
 export function CinematicScroll() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -56,16 +54,16 @@ export function CinematicScroll() {
 
     const onLoadedMetadata = () => {
       if (!video.duration || !Number.isFinite(video.duration)) return;
-      const perSecond = isMobile ? VH_PER_SECOND_OF_VIDEO_MOBILE : VH_PER_SECOND_OF_VIDEO;
-      const max = isMobile ? MAX_SCROLL_VH_MOBILE : MAX_SCROLL_VH;
-      setScrollVh(clamp(video.duration * perSecond, MIN_SCROLL_VH, max));
+      setScrollVh(
+        clamp(video.duration * VH_PER_SECOND_OF_VIDEO, MIN_SCROLL_VH, MAX_SCROLL_VH)
+      );
       setReady(true);
     };
 
     if (video.readyState >= 1) onLoadedMetadata();
     video.addEventListener("loadedmetadata", onLoadedMetadata);
     return () => video.removeEventListener("loadedmetadata", onLoadedMetadata);
-  }, [isMobile]);
+  }, []);
 
   // Scroll-position -> video-frame loop. Runs only while the section is near
   // the viewport (IntersectionObserver gates the rAF loop), and reads scroll
@@ -142,6 +140,10 @@ export function CinematicScroll() {
       io.disconnect();
     };
   }, [reducedMotion, scrollVh]);
+
+  // Declared after every hook so the hook order stays stable across renders
+  // when a resize crosses the breakpoint.
+  if (isMobile) return null;
 
   return (
     <section

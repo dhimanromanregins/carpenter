@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { HomePage } from "@/pages/HomePage";
 import { FloorWalkthroughPage } from "@/pages/FloorWalkthroughPage";
+import { BedroomWalkthroughPage } from "@/pages/BedroomWalkthroughPage";
 import { DesignStudioToolPage } from "@/pages/DesignStudioToolPage";
 import { InspirationPage } from "@/pages/InspirationPage";
 import { InspirationCategoryPage } from "@/pages/InspirationCategoryPage";
@@ -98,6 +99,7 @@ function App() {
           }
         />
         <Route path="/design-studio/floor-walkthrough" element={<FloorWalkthroughPage />} />
+        <Route path="/design-studio/bedroom-walkthrough" element={<BedroomWalkthroughPage />} />
         <Route path="/free-design-consultation" element={<LeadPage />} />
         <Route path="/admin/leads" element={<LeadsAdminPage />} />
         <Route path="/inspiration" element={<InspirationPage />} />
