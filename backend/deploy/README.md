@@ -6,7 +6,7 @@ One-time setup, then a one-line redeploy for future pushes.
 
 - VPC network → Firewall → allow ingress TCP 80 and 443 for tag `http-server`/`https-server` (0.0.0.0/0).
 - Reserve a static external IP for the VM (VM instances → edit → make IP static), so the IP survives restarts.
-- Point a DNS A record — `api.dhimaninteriors.in` — at that static IP.
+- Point a DNS A record — `api.kraftspaceinteriors.com` — at that static IP.
 
 ## 2. SSH in and install packages
 
@@ -34,7 +34,7 @@ nano .env   # set CORS_ORIGINS to your production frontend domain(s), see below
 
 ```
 DATABASE_URL=sqlite:///./carpenter.db
-CORS_ORIGINS=https://dhimaninteriors.in,https://www.dhimaninteriors.in
+CORS_ORIGINS=https://kraftspaceinteriors.com,https://www.kraftspaceinteriors.com
 GEMINI_API_KEY=<if used>
 ```
 
@@ -63,7 +63,7 @@ sudo cp deploy/nginx.conf /etc/nginx/sites-available/dhiman-backend
 sudo ln -s /etc/nginx/sites-available/dhiman-backend /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl restart nginx
 
-sudo certbot --nginx -d api.dhimaninteriors.in   # sets up HTTPS + auto-renewal
+sudo certbot --nginx -d api.kraftspaceinteriors.com   # sets up HTTPS + auto-renewal
 ```
 
 ## 6. Point the frontend at it
@@ -71,7 +71,7 @@ sudo certbot --nginx -d api.dhimaninteriors.in   # sets up HTTPS + auto-renewal
 In the frontend's production env (e.g. Vercel project settings):
 
 ```
-VITE_API_URL=https://api.dhimaninteriors.in/api
+VITE_API_URL=https://api.kraftspaceinteriors.com/api
 ```
 
 Redeploy the frontend after setting this.

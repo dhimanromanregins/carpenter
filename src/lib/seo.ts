@@ -1,7 +1,7 @@
 export const SITE_NAME = "Kraftspace Interiors";
 
 const RAW_SITE_URL = import.meta.env.VITE_SITE_URL as string | undefined;
-export const SITE_URL = (RAW_SITE_URL ?? "https://dhimaninteriors.in").replace(/\/+$/, "");
+export const SITE_URL = (RAW_SITE_URL ?? "https://kraftspaceinteriors.com").replace(/\/+$/, "");
 
 // Falls back to a real project photo until a dedicated 1200x630 branded
 // OG image is provided.
