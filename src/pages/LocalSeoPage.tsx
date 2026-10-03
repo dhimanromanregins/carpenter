@@ -113,7 +113,7 @@ export function LocalSeoPage({ slug }: { slug: string }) {
         {/* Why choose us */}
         <div className="mt-20">
           <h2 className="font-display text-3xl text-cream md:text-4xl">
-            Why Choose Dhiman Interiors in {page.city}
+            Why Choose Kraftspace Interiors in {page.city}
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {page.whyChooseUs.map((item) => (

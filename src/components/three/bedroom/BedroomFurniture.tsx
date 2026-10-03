@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, type ReactNode } from "react";
+import { useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
@@ -10,7 +10,7 @@ import { CameraSpaceContext, mixValue, useEveningMix } from "./bedroomState";
 import { MixedPointLight } from "./MixedLight";
 import { useMixedEmissive } from "./useMixedEmissive";
 import { Drawer } from "./Drawer";
-import { clickable, useLampSwitch } from "./interaction";
+import { clickable, useEased, useLampSwitch } from "./interaction";
 import { Hotspot } from "./Hotspot";
 
 const SLAT_FRONT = ROOM.z0 + 0.034;
@@ -50,13 +50,108 @@ function underglowTexture(w: number, d: number, pad: number) {
   return t;
 }
 
+// ─── Bed: a hydraulic storage bed ─────────────────────────────────────────
+
+const BED = { z0: -2.16, z1: -0.14, halfW: 0.99, top: 0.38 };
+const BED_LEN = BED.z1 - BED.z0;
+const BED_MID = (BED.z0 + BED.z1) / 2;
+/** Hinged just inside the head end; the struts hold it at ~37°. */
+const HINGE_Z = BED.z0 + 0.03;
+const LIFT_ANGLE = 0.65;
+
+const UP = new THREE.Vector3(0, 1, 0);
+
+/** A gas strut, drawn between a fixed anchor and a point on the lifting platform. */
+function GasStrut({ anchor, target }: { anchor: V3; target: React.RefObject<THREE.Object3D | null> }) {
+  const m = getBedroomMaterials();
+  const tube = useRef<THREE.Mesh>(null);
+  const rod = useRef<THREE.Mesh>(null);
+  const from = useMemo(() => new THREE.Vector3(...anchor), [anchor]);
+  const scratch = useMemo(() => ({ to: new THREE.Vector3(), dir: new THREE.Vector3(), quat: new THREE.Quaternion() }), []);
+  useFrame(() => {
+    if (!target.current || !tube.current || !rod.current) return;
+    const { to, dir, quat } = scratch;
+    target.current.getWorldPosition(to);
+    dir.subVectors(to, from);
+    const len = dir.length();
+    if (len < 1e-4) return;
+    dir.divideScalar(len);
+    quat.setFromUnitVectors(UP, dir);
+    // The rod spans the whole gap; the cylinder covers its lower half, so
+    // the strut looks like it extends as the bed rises.
+    rod.current.quaternion.copy(quat);
+    rod.current.position.copy(from).addScaledVector(dir, len * 0.5);
+    rod.current.scale.y = len;
+    tube.current.quaternion.copy(quat);
+    tube.current.position.copy(from).addScaledVector(dir, len * 0.28);
+    tube.current.scale.y = len * 0.56;
+  });
+  return (
+    <>
+      <mesh ref={rod} material={m.steel}>
+        <cylinderGeometry args={[0.0095, 0.0095, 1, 10]} />
+      </mesh>
+      <mesh ref={tube} material={m.blackMetal} castShadow>
+        <cylinderGeometry args={[0.017, 0.017, 1, 14]} />
+      </mesh>
+      <mesh position={anchor} material={m.blackMetal}>
+        <sphereGeometry args={[0.022, 12, 8]} />
+      </mesh>
+    </>
+  );
+}
+
+/** What lives in the space under a storage bed. */
+function BedStorage() {
+  const m = getBedroomMaterials();
+  const floor = 0.115;
+  return (
+    <group>
+      {/* Two suitcases */}
+      {(
+        [
+          [-0.5, -1.62, "#33383D", 0.2],
+          [0.48, -1.6, "#7C6A56", 0.16],
+        ] as [number, number, string, number][]
+      ).map(([x, z, color, h]) => (
+        <group key={x} position={[x, floor, z]} rotation={[0, x > 0 ? 0.06 : -0.04, 0]}>
+          <RoundedBox args={[0.52, h, 0.74]} radius={0.035} smoothness={3} position={[0, h / 2, 0]} castShadow receiveShadow>
+            <meshStandardMaterial color={color} roughness={0.55} />
+          </RoundedBox>
+          <mesh position={[0, h / 2, 0.372]} material={m.blackMetal}>
+            <boxGeometry args={[0.5, 0.012, 0.01]} />
+          </mesh>
+          <mesh position={[0, h + 0.012, 0]} material={m.blackMetal}>
+            <boxGeometry args={[0.16, 0.024, 0.03]} />
+          </mesh>
+        </group>
+      ))}
+      {/* Spare bedding, vacuum-packed and folded */}
+      <RoundedBox args={[0.78, 0.13, 0.56]} radius={0.05} smoothness={3} position={[-0.42, floor + 0.065, -0.72]} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#D9DEE2" roughness={0.25} transparent opacity={0.85} />
+      </RoundedBox>
+      <Folded w={0.52} d={0.42} count={4} colors={["#CDBFA8", "#B7A58B", "#E1D6C4"]} position={[0.46, floor, -0.78]} />
+      {/* A lidded storage box */}
+      <group position={[0.42, floor, -1.02]}>
+        <RoundedBox args={[0.5, 0.24, 0.4]} radius={0.02} smoothness={3} position={[0, 0.12, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color="#8D8377" roughness={0.9} />
+        </RoundedBox>
+        <RoundedBox args={[0.53, 0.04, 0.43]} radius={0.015} smoothness={3} position={[0, 0.26, 0]} castShadow>
+          <meshStandardMaterial color="#6F675D" roughness={0.9} />
+        </RoundedBox>
+      </group>
+    </group>
+  );
+}
+
 function Bed() {
   const m = getBedroomMaterials();
   const mix = useEveningMix();
-  const baseZ0 = -2.16;
-  const baseZ1 = -0.14;
-  const baseLen = baseZ1 - baseZ0;
-  const baseZ = (baseZ0 + baseZ1) / 2;
+  const [lifted, setLifted] = useState(false);
+  const lift = useEased(lifted, 1.6);
+  const platform = useRef<THREE.Group>(null);
+  const strutTargetL = useRef<THREE.Object3D>(null);
+  const strutTargetR = useRef<THREE.Object3D>(null);
 
   const duvet = useMemo(
     () =>
@@ -105,10 +200,16 @@ function Bed() {
   const glowMat = useRef<THREE.MeshBasicMaterial>(null);
   useFrame(() => {
     if (glowMat.current) glowMat.current.opacity = mixValue(0, 0.85, mix.current);
+    // Negative x-rotation swings the foot end up (+z tips toward -y otherwise).
+    if (platform.current) platform.current.rotation.x = -LIFT_ANGLE * lift.current;
   });
 
+  const toggle = () => setLifted((v) => !v);
+  const handlers = clickable(toggle);
   const channels = 9;
   const chW = 2.16 / channels;
+  const railH = 0.3;
+  const railY = BED.top - railH / 2;
 
   return (
     <group>
@@ -129,12 +230,12 @@ function Bed() {
         />
       ))}
 
-      {/* Floating plinth, upholstered base and mattress */}
-      <mesh position={[0, 0.04, baseZ]} castShadow receiveShadow>
+      {/* Floating plinth and its evening underglow */}
+      <mesh position={[0, 0.04, BED_MID]} castShadow receiveShadow>
         <boxGeometry args={[1.8, 0.08, 1.85]} />
         <meshStandardMaterial color="#1E1A17" roughness={0.6} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.003, baseZ]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.003, BED_MID]}>
         <planeGeometry args={[2.4, 2.45]} />
         <meshBasicMaterial
           ref={glowMat}
@@ -145,20 +246,46 @@ function Bed() {
           depthWrite={false}
         />
       </mesh>
-      <RoundedBox args={[1.98, 0.3, baseLen]} radius={0.04} smoothness={4} position={[0, 0.23, baseZ]} material={m.upholstery} castShadow receiveShadow />
-      <RoundedBox args={[1.84, 0.24, 1.98]} radius={0.06} smoothness={5} position={[0, 0.5, baseZ + 0.01]} material={m.linenWhite} castShadow receiveShadow />
 
-      {/* Duvet with its turned-down top, and a knit throw across the foot */}
-      <mesh geometry={duvet} material={m.linenDuvet} position={[0, 0, -1.58]} castShadow receiveShadow />
-      <RoundedBox args={[1.9, 0.05, 0.22]} radius={0.024} smoothness={4} position={[0, MATTRESS_TOP + 0.035, -1.5]} material={m.linenDuvet} castShadow receiveShadow />
-      <mesh geometry={throwGeo} material={m.rust} position={[0, 0, -0.64]} castShadow receiveShadow />
+      {/* Upholstered base, built as a hollow box: the storage well */}
+      {[-1, 1].map((s) => (
+        <RoundedBox key={s} args={[0.12, railH, BED_LEN]} radius={0.035} smoothness={4} position={[s * (BED.halfW - 0.06), railY, BED_MID]} material={m.upholstery} castShadow receiveShadow />
+      ))}
+      <RoundedBox args={[2 * BED.halfW, railH, 0.12]} radius={0.035} smoothness={4} position={[0, railY, BED.z0 + 0.06]} material={m.upholstery} castShadow receiveShadow />
+      <RoundedBox args={[2 * BED.halfW, railH, 0.12]} radius={0.035} smoothness={4} position={[0, railY, BED.z1 - 0.06]} material={m.upholstery} castShadow receiveShadow />
+      <mesh position={[0, 0.1, BED_MID]} material={m.drawerBox} receiveShadow>
+        <boxGeometry args={[2 * BED.halfW - 0.2, 0.03, BED_LEN - 0.2]} />
+      </mesh>
+      <BedStorage />
+      <GasStrut anchor={[-0.86, 0.16, -1.02]} target={strutTargetL} />
+      <GasStrut anchor={[0.86, 0.16, -1.02]} target={strutTargetR} />
 
-      {/* Pillows: two sleeping, two euro shams, one lumbar */}
-      <mesh geometry={pillows.sleep} material={m.linenWhite} position={[-0.46, MATTRESS_TOP + 0.23, -1.99]} rotation={[-0.32, 0.03, 0.02]} castShadow receiveShadow />
-      <mesh geometry={pillows.sleep2} material={m.linenWhite} position={[0.46, MATTRESS_TOP + 0.23, -1.99]} rotation={[-0.32, -0.03, -0.02]} castShadow receiveShadow />
-      <mesh geometry={pillows.euro} material={m.sage} position={[-0.38, MATTRESS_TOP + 0.22, -1.83]} rotation={[-0.24, 0.06, 0.03]} castShadow receiveShadow />
-      <mesh geometry={pillows.euro2} material={m.sage} position={[0.38, MATTRESS_TOP + 0.22, -1.83]} rotation={[-0.24, -0.06, -0.03]} castShadow receiveShadow />
-      <mesh geometry={pillows.lumbar} material={m.rust} position={[0, MATTRESS_TOP + 0.15, -1.7]} rotation={[-0.2, 0, 0]} castShadow receiveShadow />
+      {/* Everything that lifts, hinged just inside the head end */}
+      <group ref={platform} position={[0, BED.top, HINGE_Z]}>
+        <group position={[0, -BED.top, -HINGE_Z]}>
+          {/* Slatted platform under the mattress */}
+          <mesh position={[0, BED.top - 0.03, BED_MID]} material={m.walnut} castShadow receiveShadow {...handlers}>
+            <boxGeometry args={[2 * BED.halfW - 0.06, 0.05, BED_LEN - 0.08]} />
+          </mesh>
+          <object3D ref={strutTargetL} position={[-0.86, BED.top - 0.045, -0.52]} />
+          <object3D ref={strutTargetR} position={[0.86, BED.top - 0.045, -0.52]} />
+          <RoundedBox args={[1.84, 0.24, 1.98]} radius={0.06} smoothness={5} position={[0, 0.5, BED_MID + 0.01]} material={m.linenWhite} castShadow receiveShadow {...handlers} />
+
+          {/* Duvet with its turned-down top, and a knit throw across the foot */}
+          <mesh geometry={duvet} material={m.linenDuvet} position={[0, 0, -1.58]} castShadow receiveShadow {...handlers} />
+          <RoundedBox args={[1.9, 0.05, 0.22]} radius={0.024} smoothness={4} position={[0, MATTRESS_TOP + 0.035, -1.5]} material={m.linenDuvet} castShadow receiveShadow />
+          <mesh geometry={throwGeo} material={m.rust} position={[0, 0, -0.64]} castShadow receiveShadow {...handlers} />
+
+          {/* Pillows: two sleeping, two euro shams, one lumbar */}
+          <mesh geometry={pillows.sleep} material={m.linenWhite} position={[-0.46, MATTRESS_TOP + 0.23, -1.99]} rotation={[-0.32, 0.03, 0.02]} castShadow receiveShadow />
+          <mesh geometry={pillows.sleep2} material={m.linenWhite} position={[0.46, MATTRESS_TOP + 0.23, -1.99]} rotation={[-0.32, -0.03, -0.02]} castShadow receiveShadow />
+          <mesh geometry={pillows.euro} material={m.sage} position={[-0.38, MATTRESS_TOP + 0.22, -1.83]} rotation={[-0.24, 0.06, 0.03]} castShadow receiveShadow />
+          <mesh geometry={pillows.euro2} material={m.sage} position={[0.38, MATTRESS_TOP + 0.22, -1.83]} rotation={[-0.24, -0.06, -0.03]} castShadow receiveShadow />
+          <mesh geometry={pillows.lumbar} material={m.rust} position={[0, MATTRESS_TOP + 0.15, -1.7]} rotation={[-0.2, 0, 0]} castShadow receiveShadow />
+        </group>
+      </group>
+
+      <Hotspot position={[0, 0.72, BED.z1 + 0.12]} label={lifted ? "Lower the bed" : "Lift the bed (storage)"} onActivate={toggle} />
     </group>
   );
 }

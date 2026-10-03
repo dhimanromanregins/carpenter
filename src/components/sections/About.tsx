@@ -26,9 +26,9 @@ export function About() {
       <div className="container-luxury grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-8">
         <div className="flex flex-col gap-12">
           <SectionHeading
-            eyebrow="About Dhiman Interiors"
-            title="A legacy of wood, light and form"
-            description="For over a decade, Dhiman Interiors has been shaping homes across North India with handcrafted carpentry — where every panel, joint and finish is considered, not mass-produced."
+            eyebrow="About Kraftspace Interiors"
+            title="Where design meets craft"
+            description="For over a decade, Kraftspace Interiors has been shaping homes across North India with handcrafted carpentry — where every panel, joint and finish is considered, not mass-produced."
           />
 
           <div className="grid grid-cols-3 gap-4 border-y border-gold/10 py-8 sm:gap-6">

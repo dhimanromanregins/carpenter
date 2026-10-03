@@ -14,7 +14,7 @@ import { useSeo } from "@/hooks/useSeo";
 export function FloorWalkthroughPage() {
   useSeo({
     title: "3D Interior Walkthrough",
-    description: "Explore an interactive 3D walkthrough of a Dhiman Interiors home design, serving Zirakpur, Chandigarh and Mohali.",
+    description: "Explore an interactive 3D walkthrough of a Kraftspace Interiors home design, serving Zirakpur, Chandigarh and Mohali.",
     path: "/design-studio/floor-walkthrough",
   });
 

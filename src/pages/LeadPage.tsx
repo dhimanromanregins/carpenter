@@ -20,7 +20,7 @@ import {
 
 const PHONE = "+917717545979";
 const WHATSAPP_TEXT = encodeURIComponent(
-  "Hi Dhiman Interiors, I'd like to book my free design consultation."
+  "Hi Kraftspace Interiors, I'd like to book my free design consultation."
 );
 
 const OFFER_POINTS = [
@@ -121,7 +121,7 @@ export function LeadPage() {
   useSeo({
     title: "Free Design Consultation and 3D Quote",
     description:
-      "Book a free 45-minute design consultation with Dhiman Interiors: 3D visualisation, itemised quotation and material samples for kitchens, wardrobes and full home interiors across the Tricity.",
+      "Book a free 45-minute design consultation with Kraftspace Interiors: 3D visualisation, itemised quotation and material samples for kitchens, wardrobes and full home interiors across the Tricity.",
     path: "/free-design-consultation",
   });
 

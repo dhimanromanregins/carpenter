@@ -8,9 +8,9 @@ import { About } from "@/components/sections/About";
 import { Services } from "@/components/sections/Services";
 import { Materials } from "@/components/sections/Materials";
 import { Projects } from "@/components/sections/Projects";
-import { RoomShowcase } from "@/components/sections/RoomShowcase";
 import { WhyChooseUs } from "@/components/sections/WhyChooseUs";
 import { Testimonials } from "@/components/sections/Testimonials";
+import { Process } from "@/components/sections/Process";
 import { Contact } from "@/components/sections/Contact";
 import { useLenis, getLenis } from "@/hooks/useLenis";
 
@@ -19,7 +19,7 @@ export function HomePage() {
   useSeo({
     title: "Luxury Carpentry & Interior Design in Zirakpur, Chandigarh & Mohali",
     description:
-      "Dhiman Interiors crafts bespoke modular kitchens, wardrobes, TV panels and full home interiors for clients across Zirakpur, Chandigarh and Mohali. Book a free site visit.",
+      "Kraftspace Interiors crafts bespoke modular kitchens, wardrobes, TV panels and full home interiors for clients across Zirakpur, Chandigarh and Mohali. Book a free site visit.",
     path: "/",
   });
 
@@ -44,11 +44,11 @@ export function HomePage() {
         <Services />
         <Materials />
         <Projects />
-        <RoomShowcase />
+        <Process />
         <WhyChooseUs />
         <Testimonials />
-        <Contact />
         <CinematicScroll />
+        <Contact />
       </main>
 
       <Footer />

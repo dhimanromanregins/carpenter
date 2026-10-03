@@ -69,7 +69,7 @@ function emptyCustom(): CustomQuotationInput {
     board_id: null,
     shutter_id: null,
     shutter_area_sqft: null,
-    glass_cabinets: { enabled: false, standard_quantity: 0, custom_items: [] },
+    glass_cabinets: { enabled: false, finish: null, standard_quantity: 0, custom_items: [] },
     pantry: { enabled: false, pantry_type_id: null },
     hardware: {
       use_brand_throughout: false,
@@ -118,6 +118,7 @@ interface QuotationState {
   setBoard(boardId: number | null): void;
   setShutter(shutterId: number | null, areaSqft?: number | null): void;
   setGlassCabinetsEnabled(enabled: boolean): void;
+  setGlassCabinetFinish(finish: string | null): void;
   setGlassCabinetStandardQuantity(quantity: number): void;
   addGlassCabinetCustomItem(item: GlassCabinetCustomItem): void;
   removeGlassCabinetCustomItem(index: number): void;
@@ -196,6 +197,8 @@ export const useQuotationStore = create<QuotationState>()(
         })),
       setGlassCabinetsEnabled: (enabled) =>
         set((s) => ({ custom: { ...s.custom, glass_cabinets: { ...s.custom.glass_cabinets, enabled } } })),
+      setGlassCabinetFinish: (finish) =>
+        set((s) => ({ custom: { ...s.custom, glass_cabinets: { ...s.custom.glass_cabinets, finish } } })),
       setGlassCabinetStandardQuantity: (quantity) =>
         set((s) => ({
           custom: { ...s.custom, glass_cabinets: { ...s.custom.glass_cabinets, standard_quantity: Math.max(0, quantity) } },

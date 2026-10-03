@@ -491,6 +491,60 @@ function makeArtwork() {
   return toTexture(c, true, false);
 }
 
+// ── Falling water: soft vertical streaks, transparent between them ────────
+function makeWaterStreaks() {
+  const W = 256;
+  const H = 256;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext("2d")!;
+  const img = ctx.createImageData(W, H);
+  const { fbm } = createNoise(97);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const u = x / W;
+      const v = y / H;
+      // Thin, wobbling streaks that break up down the fall.
+      const wobble = fbm(u, v, 6, 3, 3);
+      const t = u * 34 + wobble * 2.5;
+      const streak = Math.pow(Math.abs(Math.sin(t * Math.PI)), 24);
+      const drops = Math.pow(fbm(u, v, 24, 10, 3), 3) * 1.6;
+      const a = Math.min(1, streak * 0.85 + drops);
+      const i = (y * W + x) * 4;
+      img.data[i] = 226;
+      img.data[i + 1] = 240;
+      img.data[i + 2] = 248;
+      img.data[i + 3] = a * 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return toTexture(c, true);
+}
+
+// ── A soft puff of steam ──────────────────────────────────────────────────
+function makeSteam() {
+  const S = 128;
+  const c = makeCanvas(S, S);
+  const ctx = c.getContext("2d")!;
+  const img = ctx.createImageData(S, S);
+  const { fbm } = createNoise(101);
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const u = x / S;
+      const v = y / S;
+      const d = Math.hypot(u - 0.5, v - 0.5) * 2;
+      const puff = fbm(u, v, 4, 4, 4);
+      const a = Math.max(0, 1 - d) ** 2 * (0.35 + 0.8 * puff);
+      const i = (y * S + x) * 4;
+      img.data[i] = 255;
+      img.data[i + 1] = 255;
+      img.data[i + 2] = 255;
+      img.data[i + 3] = Math.min(1, a) * 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return toTexture(c, true, false);
+}
+
 // ── Lawn: patchy greens with fine blade flecks ─────────────────────────────
 function makeGrass(): PbrMaps {
   const S = 512;
@@ -591,6 +645,9 @@ export interface BedroomTextures {
   marbleFloor: PbrMaps;
   neroMarble: PbrMaps;
   travertine: PbrMaps;
+  calacatta: PbrMaps;
+  waterStreaks: THREE.Texture;
+  steam: THREE.Texture;
   grass: PbrMaps;
   houseNumber: THREE.Texture;
 }
@@ -649,6 +706,18 @@ export function getBedroomTextures(): BedroomTextures {
       tiles: 2,
       veinWidth: 0.14,
     }),
+    // Book-matched Calacatta for the bathroom walls: one continuous slab.
+    calacatta: makeMarble({
+      seed: 83,
+      size: 768,
+      base: [242, 240, 236],
+      cloud: [226, 223, 216],
+      vein: [130, 126, 118],
+      tiles: 0,
+      veinWidth: 0.09,
+    }),
+    waterStreaks: makeWaterStreaks(),
+    steam: makeSteam(),
     grass: makeGrass(),
     houseNumber: makeHouseNumber(),
   };

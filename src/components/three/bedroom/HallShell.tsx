@@ -2,7 +2,20 @@ import { useContext, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial } from "@react-three/drei";
 import * as THREE from "three";
-import { DECK, DOOR, GLASS_WALL, GROUND_Y, HALL, MAIN_DOOR, PARTITION, ROOM, SLIDER } from "./bedroomLayout";
+import {
+  BATH_DOOR,
+  DECK,
+  DOOR,
+  GLASS_WALL,
+  GROUND_Y,
+  HALL,
+  KITCHEN_OPENING,
+  MAIN_DOOR,
+  PARTITION,
+  ROOM,
+  SLIDER,
+  STAIR_OPENING,
+} from "./bedroomLayout";
 import { getBedroomMaterials } from "./bedroomMaterials";
 import { CameraSpaceContext, mixValue, OpeningsContext, openingState, useEveningMix } from "./bedroomState";
 import { Hotspot } from "./Hotspot";
@@ -78,11 +91,10 @@ function HallWalls() {
   const wallFace = PARTITION.z1;
 
   // Wainscot panels either side of the bedroom door.
+  // The kitchen's joinery covers the wall west of -0.75, so the panelling
+  // picks up again where the run ends.
   const bays: [number, number][] = [
-    [-4.35, -3.3],
-    [-3.15, -2.1],
-    [-1.95, -0.9],
-    [-0.75, 0.9],
+    [-0.55, 0.9],
     [2.3, 3.08],
   ];
   const M = MAIN_DOOR;
@@ -98,9 +110,20 @@ function HallWalls() {
       <Box size={[M.sideX1 - M.x0, H - M.height, SKIN_T]} position={[(M.x0 + M.sideX1) / 2, (H + M.height) / 2, skinZ]} material={m.wall} />
       {/* The bedroom's own wall only reaches its lower ceiling — close the gap above it */}
       <Box size={[HW, H - 3.0, 0.2]} position={[HCX, (H + 3.0) / 2, PARTITION.z0 + 0.1]} material={m.wall} cast={false} />
-      {/* West and east walls */}
-      <Box size={[WALL_T, H, HD + 0.44]} position={[HALL.x0 - WALL_T / 2, H / 2, HCZ]} material={m.wall} />
-      <Box size={[WALL_T, H, HD + 0.44]} position={[HALL.x1 + WALL_T / 2, H / 2, HCZ]} material={m.wall} />
+      {/* West wall, with the bathroom doorway through it */}
+      <Box size={[WALL_T, H, BATH_DOOR.z0 - (HALL.z0 - 0.22)]} position={[HALL.x0 - WALL_T / 2, H / 2, (HALL.z0 - 0.22 + BATH_DOOR.z0) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H, KITCHEN_OPENING.z0 - BATH_DOOR.z1]} position={[HALL.x0 - WALL_T / 2, H / 2, (BATH_DOOR.z1 + KITCHEN_OPENING.z0) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H, HALL.z1 + 0.22 - KITCHEN_OPENING.z1]} position={[HALL.x0 - WALL_T / 2, H / 2, (KITCHEN_OPENING.z1 + HALL.z1 + 0.22) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H - KITCHEN_OPENING.height, KITCHEN_OPENING.z1 - KITCHEN_OPENING.z0]} position={[HALL.x0 - WALL_T / 2, (H + KITCHEN_OPENING.height) / 2, (KITCHEN_OPENING.z0 + KITCHEN_OPENING.z1) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H - BATH_DOOR.height, BATH_DOOR.z1 - BATH_DOOR.z0]} position={[HALL.x0 - WALL_T / 2, (H + BATH_DOOR.height) / 2, (BATH_DOOR.z0 + BATH_DOOR.z1) / 2]} material={m.wall} />
+      {/* East wall, split around the stair tower's doorway (a plain cased opening) */}
+      <Box size={[WALL_T, H, STAIR_OPENING.z0 - (HALL.z0 - 0.22)]} position={[HALL.x1 + WALL_T / 2, H / 2, (HALL.z0 - 0.22 + STAIR_OPENING.z0) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H, HALL.z1 + 0.22 - STAIR_OPENING.z1]} position={[HALL.x1 + WALL_T / 2, H / 2, (STAIR_OPENING.z1 + HALL.z1 + 0.22) / 2]} material={m.wall} />
+      <Box size={[WALL_T, H - STAIR_OPENING.height, STAIR_OPENING.z1 - STAIR_OPENING.z0]} position={[HALL.x1 + WALL_T / 2, (H + STAIR_OPENING.height) / 2, (STAIR_OPENING.z0 + STAIR_OPENING.z1) / 2]} material={m.wall} />
+      {/* Walnut lining round the opening, as elsewhere in the house */}
+      <Box size={[0.22, STAIR_OPENING.height, 0.09]} position={[HALL.x1 + 0.1, STAIR_OPENING.height / 2, STAIR_OPENING.z0 + 0.045]} material={m.walnut} />
+      <Box size={[0.22, STAIR_OPENING.height, 0.09]} position={[HALL.x1 + 0.1, STAIR_OPENING.height / 2, STAIR_OPENING.z1 - 0.045]} material={m.walnut} />
+      <Box size={[0.22, 0.09, STAIR_OPENING.z1 - STAIR_OPENING.z0]} position={[HALL.x1 + 0.1, STAIR_OPENING.height - 0.045, (STAIR_OPENING.z0 + STAIR_OPENING.z1) / 2]} material={m.walnut} />
       {/* South wall: solid ends and the transom above the glass */}
       <Box size={[GLASS_WALL.x0 - HALL.x0 + WALL_T, H, WALL_T]} position={[(HALL.x0 - WALL_T + GLASS_WALL.x0) / 2, H / 2, southZ]} material={m.wall} />
       <Box size={[HALL.x1 + WALL_T - GLASS_WALL.x1, H, WALL_T]} position={[(GLASS_WALL.x1 + HALL.x1 + WALL_T) / 2, H / 2, southZ]} material={m.wall} />
@@ -120,7 +143,9 @@ function HallWalls() {
       <Box size={[DOOR.x0 - 0.07 - HALL.x0, 0.13, 0.018]} position={[(HALL.x0 + DOOR.x0 - 0.07) / 2, 0.065, wallFace + 0.009]} material={m.trim} cast={false} />
       <Box size={[M.x0 - 0.12 - DOOR.x1 - 0.07, 0.13, 0.018]} position={[(DOOR.x1 + 0.07 + M.x0 - 0.12) / 2, 0.065, wallFace + 0.009]} material={m.trim} cast={false} />
       <Box size={[HALL.x1 - M.sideX1 - 0.12, 0.13, 0.018]} position={[(M.sideX1 + 0.12 + HALL.x1) / 2, 0.065, wallFace + 0.009]} material={m.trim} cast={false} />
-      <Box size={[0.018, 0.13, HD]} position={[HALL.x0 + 0.009, 0.065, HCZ]} material={m.trim} cast={false} />
+      <Box size={[0.018, 0.13, BATH_DOOR.z0 - HALL.z0 - 0.07]} position={[HALL.x0 + 0.009, 0.065, (HALL.z0 + BATH_DOOR.z0 - 0.07) / 2]} material={m.trim} cast={false} />
+      <Box size={[0.018, 0.13, KITCHEN_OPENING.z0 - BATH_DOOR.z1 - 0.14]} position={[HALL.x0 + 0.009, 0.065, (BATH_DOOR.z1 + 0.07 + KITCHEN_OPENING.z0 - 0.07) / 2]} material={m.trim} cast={false} />
+      <Box size={[0.018, 0.13, HALL.z1 - KITCHEN_OPENING.z1 - 0.07]} position={[HALL.x0 + 0.009, 0.065, (KITCHEN_OPENING.z1 + 0.07 + HALL.z1) / 2]} material={m.trim} cast={false} />
       <Box size={[0.018, 0.13, HD]} position={[HALL.x1 - 0.009, 0.065, HCZ]} material={m.trim} cast={false} />
     </group>
   );

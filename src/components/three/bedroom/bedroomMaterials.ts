@@ -36,6 +36,9 @@ function wood(maps: PbrMaps, repeat: number, roughness = 0.9) {
 function build() {
   const t = getBedroomTextures();
   const plaster = withRepeat(t.plaster, 3, 2);
+  // Very fine-grained, almost invisible micro-texture: the subtle unevenness
+  // real sprayed lacquer has, which keeps a flat colour from reading as CG-flat.
+  const microGrain = withRepeat(t.plaster, 70, 46);
   return {
     wall: new THREE.MeshStandardMaterial({
       color: "#ECE5DA",
@@ -106,6 +109,55 @@ function build() {
       sheen: 0.3,
       sheenColor: new THREE.Color("#d9a57c"),
     }),
+    // ── Kitchen ──
+    /** Matte lacquer cabinet fronts — the flat, seamless look of good joinery. */
+    lacquer: new THREE.MeshPhysicalMaterial({
+      color: "#6B6A63",
+      roughness: 0.62,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.6,
+    }),
+    lacquerPale: new THREE.MeshPhysicalMaterial({
+      color: "#CFC9BD",
+      roughness: 0.6,
+      clearcoat: 0.3,
+      clearcoatRoughness: 0.6,
+    }),
+    /** The induction hob's black glass, and the ovens' doors. */
+    hobGlass: new THREE.MeshPhysicalMaterial({
+      color: "#0E0F11",
+      roughness: 0.06,
+      metalness: 0.2,
+      clearcoat: 1,
+      clearcoatRoughness: 0.03,
+    }),
+    velvetOlive: new THREE.MeshPhysicalMaterial({
+      color: "#41503C",
+      roughness: 0.82,
+      sheen: 1,
+      sheenRoughness: 0.3,
+      sheenColor: new THREE.Color("#a9bd96"),
+      side: THREE.DoubleSide,
+    }),
+    /** Book-matched Calacatta for the dining slab — one uncut piece per face. */
+    calacattaTop: (() => {
+      const w = withRepeat(t.calacatta, 1, 1);
+      return new THREE.MeshPhysicalMaterial({
+        map: w.map,
+        roughnessMap: w.roughnessMap,
+        roughness: 1,
+        clearcoat: 1,
+        clearcoatRoughness: 0.06,
+      });
+    })(),
+    stemware: new THREE.MeshPhysicalMaterial({
+      color: "#ffffff",
+      roughness: 0.02,
+      transparent: true,
+      opacity: 0.28,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
     neroSlab: (() => {
       const n = withRepeat(t.neroMarble, 1, 1);
       return new THREE.MeshPhysicalMaterial({
@@ -151,6 +203,46 @@ function build() {
       roughness: 0.95,
     }),
     trim: new THREE.MeshStandardMaterial({ color: "#E6DFD3", roughness: 0.55 }),
+
+    // ── Kitchen ──
+    /** Satin matte lacquer — soft sheen, not the glossy-plastic look flat clearcoat gives. */
+    cabinetGreen: new THREE.MeshPhysicalMaterial({
+      color: "#404D3D",
+      bumpMap: microGrain.bumpMap,
+      bumpScale: 0.025,
+      roughness: 0.48,
+      clearcoat: 0.18,
+      clearcoatRoughness: 0.8,
+    }),
+
+    // ── Bathroom ──
+    marbleWall: (() => {
+      const w = withRepeat(t.calacatta, 1, 1);
+      return new THREE.MeshPhysicalMaterial({
+        map: w.map,
+        roughnessMap: w.roughnessMap,
+        roughness: 1,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.12,
+      });
+    })(),
+    porcelain: new THREE.MeshPhysicalMaterial({
+      color: "#FAFAF8",
+      roughness: 0.08,
+      clearcoat: 1,
+      clearcoatRoughness: 0.04,
+      side: THREE.DoubleSide,
+    }),
+    chrome: new THREE.MeshStandardMaterial({ color: "#E8E9EB", metalness: 1, roughness: 0.08 }),
+    showerGlass: new THREE.MeshPhysicalMaterial({
+      color: "#e8f2f4",
+      roughness: 0.03,
+      metalness: 0,
+      transparent: true,
+      opacity: 0.16,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
 
     // ── Entrance and garden ──
     travertine: (() => {

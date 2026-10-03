@@ -23,6 +23,7 @@ class GlassCabinetCustomItem(BaseModel):
 
 class GlassCabinetSelection(BaseModel):
     enabled: bool = False
+    finish: str | None = None
     standard_quantity: int = 0
     custom_items: list[GlassCabinetCustomItem] = Field(default_factory=list)
 

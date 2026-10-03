@@ -68,7 +68,7 @@ export function Navbar() {
             }}
             className="flex items-center"
           >
-            <img src="/logo.png" alt="Dhiman Interiors" className="h-11 w-11 object-contain md:h-12 md:w-12" />
+            <img src="/logo.png" alt="Kraftspace Interior Design & Architecture" className="h-12 w-auto object-contain md:h-14" />
           </a>
 
           <ul className="hidden items-center gap-10 lg:flex">

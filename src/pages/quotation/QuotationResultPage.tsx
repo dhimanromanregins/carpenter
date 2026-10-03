@@ -14,7 +14,7 @@ export function QuotationResultPage() {
 
   useSeo({
     title: "Your Kitchen Quotation",
-    description: "View and download your Dhiman Interiors kitchen quotation.",
+    description: "View and download your Kraftspace Interiors kitchen quotation.",
     path: `/quote/${quotationId ?? ""}`,
     noindex: true,
   });

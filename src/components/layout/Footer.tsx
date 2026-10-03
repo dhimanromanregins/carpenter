@@ -36,7 +36,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-10 py-16 md:grid-cols-5">
           <div className="col-span-2">
             <p className="font-display text-xl tracking-[0.15em] text-cream">
-              DHIMAN <span className="text-gold">INTERIORS</span>
+              KRAFTSPACE <span className="text-gold">INTERIORS</span>
             </p>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-grey">
               Bespoke carpentry and luxury interior craftsmanship for modern
@@ -90,14 +90,15 @@ export function Footer() {
             </p>
             <ul className="space-y-2 break-words text-sm text-grey">
               <li>contact@dhimaninteriors.in</li>
-              <li>+91 9992268109</li>
-              <li>Highland Marg, Highway, Patiala, Zirakpur, Punjab 140603</li>
+              <li><a href="tel:+917717545979">+91 7717545979</a></li>
+              <li><a href="tel:+919992268109">+91 9992268109</a></li>
+              <li>SCO-16, Second Floor, Uptown Insignia, Airport Road, Zirakpur, Punjab 140603</li>
             </ul>
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-6 border-t border-gold/10 py-8 text-xs text-grey md:flex-row">
-          <p>&copy; {YEAR} Dhiman Interiors. All rights reserved.</p>
+          <p>&copy; {YEAR} Kraftspace Interiors. All rights reserved.</p>
         </div>
       </div>
     </footer>

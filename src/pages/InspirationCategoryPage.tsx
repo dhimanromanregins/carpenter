@@ -11,8 +11,8 @@ export function InspirationCategoryPage() {
   useSeo({
     title: room ? `${room.label} Design Inspiration` : "Design Inspiration",
     description: room
-      ? `${room.description} Explore ${room.label.toLowerCase()} interior design ideas from Dhiman Interiors, serving Zirakpur, Chandigarh and Mohali.`
-      : "Browse interior design inspiration from Dhiman Interiors.",
+      ? `${room.description} Explore ${room.label.toLowerCase()} interior design ideas from Kraftspace Interiors, serving Zirakpur, Chandigarh and Mohali.`
+      : "Browse interior design inspiration from Kraftspace Interiors.",
     path: `/inspiration/${slug ?? ""}`,
     image: room?.categories[0]?.images[0]?.src,
   });

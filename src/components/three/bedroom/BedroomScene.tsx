@@ -16,11 +16,17 @@ import {
   type OpeningsControl,
 } from "./bedroomState";
 import { Entrance } from "./Entrance";
+import { FirstFloorBedrooms } from "./FirstFloorBedrooms";
+import { FirstFloorLiving } from "./FirstFloorLiving";
+import { FirstFloorShell } from "./FirstFloorShell";
 import { HallFurniture } from "./HallFurniture";
 import { HallShell } from "./HallShell";
+import { Bathroom } from "./Bathroom";
+import { Kitchen } from "./Kitchen";
 import { RoomShell } from "./RoomShell";
 import { SpaceCull } from "./SpaceCull";
-import { seesBedroom, seesHall } from "./spaceRules";
+import { seesBathroom, seesBedroom, seesFirstFloor, seesHall, seesKitchen, seesStairHall } from "./spaceRules";
+import { StairHall } from "./StairHall";
 import { Wardrobe } from "./Wardrobe";
 
 export type BedroomQuality = "high" | "balanced";
@@ -118,6 +124,20 @@ export function BedroomScene({
               <HallShell reflections={high} />
               <SpaceCull visibleWhen={seesHall}>
                 <HallFurniture />
+              </SpaceCull>
+              <SpaceCull visibleWhen={seesBathroom}>
+                <Bathroom reflections={high} />
+              </SpaceCull>
+              <SpaceCull visibleWhen={seesKitchen}>
+                <Kitchen reflections={high} />
+              </SpaceCull>
+              <SpaceCull visibleWhen={seesStairHall}>
+                <StairHall />
+              </SpaceCull>
+              <SpaceCull visibleWhen={seesFirstFloor}>
+                <FirstFloorShell />
+                <FirstFloorLiving />
+                <FirstFloorBedrooms />
               </SpaceCull>
               <Entrance />
               <BedroomWalkController />

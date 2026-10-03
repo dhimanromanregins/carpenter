@@ -99,7 +99,7 @@ export function Contact() {
                 <div>
                   <p className="text-sm text-cream">Studio Address</p>
                   <p className="mt-1 text-sm text-grey">
-                    Highland Marg, Highway, Patiala, Zirakpur, Punjab 140603
+                    SCO-16, Second Floor, Uptown Insignia, Airport Road, Zirakpur, Punjab 140603
                   </p>
                 </div>
               </div>
@@ -107,7 +107,12 @@ export function Contact() {
                 <FaPhoneAlt className="mt-1 text-gold" />
                 <div>
                   <p className="text-sm text-cream">Call Us</p>
-                  <p className="mt-1 text-sm text-grey">+91 9992268109</p>
+                  <p className="mt-1 text-sm text-grey">
+                    <a href="tel:+917717545979">+91 7717545979</a>
+                  </p>
+                  <p className="mt-1 text-sm text-grey">
+                    <a href="tel:+919992268109">+91 9992268109</a>
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -124,7 +129,7 @@ export function Contact() {
             <div className="relative flex-1 overflow-hidden rounded-2xl border border-gold/15">
               <iframe
                 title="Studio Location"
-                src="https://maps.google.com/maps?q=Highland+Marg%2C+Zirakpur%2C+Punjab+140603&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=SCO-16%2C+Second+Floor%2C+Uptown+Insignia%2C+Airport+Road%2C+Zirakpur%2C+Punjab+140603&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 className="h-full min-h-[220px] w-full"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

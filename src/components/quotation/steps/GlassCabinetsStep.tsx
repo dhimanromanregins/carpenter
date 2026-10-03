@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NumericField } from "@/components/ui/NumericField";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { GlassFinishPicker } from "@/components/ui/GlassFinishPicker";
 import { StepShell } from "@/components/quotation/StepShell";
 import { useGlassCabinets } from "@/hooks/useCatalog";
 import { useQuotationStore } from "@/store/quotationStore";
@@ -15,7 +16,8 @@ export function GlassCabinetsStep() {
 
   const selection = useQuotationStore((s) => s.custom.glass_cabinets);
   const setEnabled = useQuotationStore((s) => s.setGlassCabinetsEnabled);
-  const setQuantity = useQuotationStore((s) => s.setGlassCabinetStandardQuantity);
+  const setFinish = useQuotationStore((s) => s.setGlassCabinetFinish);
+  const setQuantity =useQuotationStore((s) => s.setGlassCabinetStandardQuantity);
   const addCustomItem = useQuotationStore((s) => s.addGlassCabinetCustomItem);
   const removeCustomItem = useQuotationStore((s) => s.removeGlassCabinetCustomItem);
   const next = useQuotationStore((s) => s.nextCustomStep);
@@ -59,6 +61,10 @@ export function GlassCabinetsStep() {
 
       {selection.enabled && (
         <div className="mt-6 space-y-6">
+          <div>
+            <p className="mb-3 text-xs uppercase tracking-widest text-grey">Glass finish</p>
+            <GlassFinishPicker value={selection.finish} onChange={setFinish} />
+          </div>
           <GlassCard className="flex items-center justify-between p-5">
             <div>
               <p className="font-display text-lg text-cream">{standardOption?.name ?? "Standard Cabinet"}</p>

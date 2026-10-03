@@ -74,7 +74,7 @@ export const SERVICE_SEO_PAGES: ServiceSeoPageContent[] = [
       { src: "/projects/mohali-sector-59-kitchen/front.png", caption: "Completed L-shaped modular kitchen, Mohali Sector 59" },
     ],
     galleryNote: "A sample of our completed kitchen work across the tricity. Tell us your Sector and kitchen size and we'll advise on which layout actually fits.",
-    whyChooseUsTitle: "Why Choose Dhiman Interiors for Your Chandigarh Kitchen",
+    whyChooseUsTitle: "Why Choose Kraftspace Interiors for Your Chandigarh Kitchen",
     whyChooseUs: [
       {
         title: "We don't touch structural walls",
@@ -158,7 +158,7 @@ export const SERVICE_SEO_PAGES: ServiceSeoPageContent[] = [
       { src: "/wardrobe-inspiration/sliding/637638843872201466249.png", caption: "Sliding wardrobe — reference image for inspiration, not one of our own projects" },
     ],
     galleryNote: "A sample of our completed wardrobe work, plus a reference image for style inspiration only.",
-    whyChooseUsTitle: "Why Choose Dhiman Interiors for Your Wardrobe",
+    whyChooseUsTitle: "Why Choose Kraftspace Interiors for Your Wardrobe",
     whyChooseUs: [
       {
         title: "Three clear finish tiers",

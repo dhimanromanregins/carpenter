@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
@@ -16,6 +17,13 @@ import { QuotationResultPage } from "@/pages/quotation/QuotationResultPage";
 import { WardrobeQuotationResultPage } from "@/pages/quotation/WardrobeQuotationResultPage";
 import { TileQuotationResultPage } from "@/pages/quotation/TileQuotationResultPage";
 import { CeilingQuotationResultPage } from "@/pages/quotation/CeilingQuotationResultPage";
+
+const KitchenStudioPage = lazy(() =>
+  import("@/pages/KitchenStudioPage").then((m) => ({ default: m.KitchenStudioPage }))
+);
+const WardrobeDesignerPage = lazy(() =>
+  import("@/pages/WardrobeDesignerPage").then((m) => ({ default: m.WardrobeDesignerPage }))
+);
 
 function App() {
   const location = useLocation();
@@ -38,7 +46,7 @@ function App() {
             <DesignStudioToolPage
               src="/design-studio.html"
               title="3D Design Studio"
-              description="Explore Dhiman Interiors' interactive 3D Design Studio — visualize kitchens, wardrobes, floors, beds and TV panels before you build."
+              description="Explore Kraftspace Interiors' interactive 3D Design Studio — visualize kitchens, wardrobes, floors, beds and TV panels before you build."
               path="/design-studio"
             />
           }
@@ -46,32 +54,24 @@ function App() {
         <Route
           path="/design-studio/kitchen"
           element={
-            <DesignStudioToolPage
-              src="/design-studio-kitchen.html"
-              title="Kitchen Designer — 3D Design Studio"
-              description="Design your dream modular kitchen in interactive 3D with Dhiman Interiors' Kitchen Designer tool."
-              path="/design-studio/kitchen"
-            />
+            <Suspense fallback={<div className="fixed inset-0 bg-ink" />}>
+              <KitchenStudioPage />
+            </Suspense>
           }
-        />
-        <Route
+        />        <Route
           path="/design-studio/wardrobe"
           element={
-            <DesignStudioToolPage
-              src="/design-studio-wardrobe.html"
-              title="Wardrobe Designer — 3D Design Studio"
-              description="Design your dream wardrobe in interactive 3D with Dhiman Interiors' Wardrobe Designer tool."
-              path="/design-studio/wardrobe"
-            />
+            <Suspense fallback={<div className="fixed inset-0 bg-ink" />}>
+              <WardrobeDesignerPage />
+            </Suspense>
           }
-        />
-        <Route
+        />        <Route
           path="/design-studio/floor"
           element={
             <DesignStudioToolPage
               src="/design-studio-floor.html"
               title="Floor Design — 3D Design Studio"
-              description="Design your floor layout in interactive 3D with Dhiman Interiors' Floor Design tool."
+              description="Design your floor layout in interactive 3D with Kraftspace Interiors' Floor Design tool."
               path="/design-studio/floor"
             />
           }
@@ -82,7 +82,7 @@ function App() {
             <DesignStudioToolPage
               src="/design-studio-bed.html"
               title="Bed Design — 3D Design Studio"
-              description="Design your dream bed and bedroom layout in interactive 3D with Dhiman Interiors' Bed Design tool."
+              description="Design your dream bed and bedroom layout in interactive 3D with Kraftspace Interiors' Bed Design tool."
               path="/design-studio/bed"
             />
           }
@@ -93,7 +93,7 @@ function App() {
             <DesignStudioToolPage
               src="/design-studio-tv-panel.html"
               title="TV Panel Design — 3D Design Studio"
-              description="Design your TV panel and media wall in interactive 3D with Dhiman Interiors' TV Panel Design tool."
+              description="Design your TV panel and media wall in interactive 3D with Kraftspace Interiors' TV Panel Design tool."
               path="/design-studio/tv-panel"
             />
           }

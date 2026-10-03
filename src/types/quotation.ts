@@ -134,6 +134,8 @@ export interface GlassCabinetCustomItem {
 
 export interface GlassCabinetSelection {
   enabled: boolean;
+  /** Glass finish id from src/data/glassFinishes.ts */
+  finish?: string | null;
   standard_quantity: number;
   custom_items: GlassCabinetCustomItem[];
 }

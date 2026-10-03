@@ -97,6 +97,7 @@ def _calculate_glass_cabinets(db: Session, custom: CustomQuotationInput) -> Quot
         label="Glass Cabinets",
         subtotal=subtotal,
         detail={
+            "finish": selection.finish,
             "standard_quantity": selection.standard_quantity,
             "standard_price": standard_price,
             "custom_items": custom_breakdown,

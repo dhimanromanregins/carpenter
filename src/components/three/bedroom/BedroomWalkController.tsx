@@ -6,9 +6,14 @@ import {
   DOOR_CLOSED_COLLIDER,
   DOOR_OPEN_COLLIDER,
   EYE_HEIGHT,
+  BATH_DOOR_CLOSED_COLLIDER,
+  BATH_DOOR_OPEN_COLLIDER,
   MAIN_DOOR_CLOSED_COLLIDER,
   MAIN_DOOR_OPEN_COLLIDER,
   PLAYER_RADIUS,
+  SHOWER_DOOR_CLOSED_COLLIDER,
+  SHOWER_DOOR_OPEN_COLLIDER,
+  SHOWER_GLASS_COLLIDERS,
   SLIDER_CLOSED_COLLIDER,
   SPAWN,
   WALLS,
@@ -33,7 +38,7 @@ const WALK_SPEED = 1.5; // m/s — an unhurried indoor stroll
 const RUN_SPEED = 2.6;
 const LOOK_SPEED = 0.0042;
 
-const STATIC_BOXES: Box2[] = [...WALLS, ...COLLIDERS];
+const STATIC_BOXES: Box2[] = [...WALLS, ...COLLIDERS, ...SHOWER_GLASS_COLLIDERS];
 const TOUR_SPEED = 1.7;
 
 /** Colliders for the doors and sliding panel in their current state. */
@@ -42,17 +47,20 @@ function openingBoxes(): Box2[] {
   // A half-open door blocks the doorway; a mostly open one blocks where it swung to.
   out.push(openingState.door > 0.7 ? DOOR_OPEN_COLLIDER : DOOR_CLOSED_COLLIDER);
   out.push(openingState.mainDoor > 0.7 ? MAIN_DOOR_OPEN_COLLIDER : MAIN_DOOR_CLOSED_COLLIDER);
+  out.push(openingState.bathDoor > 0.7 ? BATH_DOOR_OPEN_COLLIDER : BATH_DOOR_CLOSED_COLLIDER);
   if (openingState.slider < 0.75) out.push(SLIDER_CLOSED_COLLIDER);
+  out.push(openingState.showerDoor > 0.7 ? SHOWER_DOOR_OPEN_COLLIDER : SHOWER_DOOR_CLOSED_COLLIDER);
   return out;
 }
 
 /** Which opening joins two adjacent spaces (see spaceAt). */
-function openingBetween(a: number, b: number): "door" | "slider" | "mainDoor" | null {
+function openingBetween(a: number, b: number): "door" | "slider" | "mainDoor" | "bathDoor" | null {
   const lo = Math.min(a, b);
   const hi = Math.max(a, b);
   if (lo === 0 && hi === 1) return "door";
   if (lo === 1 && hi === 2) return "slider";
   if (lo === 1 && hi === 3) return "mainDoor";
+  if (lo === 1 && hi === 4) return "bathDoor";
   return null;
 }
 
@@ -60,6 +68,7 @@ function isOpenEnough(o: ReturnType<typeof openingBetween>) {
   if (o === "door") return openingState.door >= 0.75;
   if (o === "slider") return openingState.slider >= 0.8;
   if (o === "mainDoor") return openingState.mainDoor >= 0.75;
+  if (o === "bathDoor") return openingState.bathDoor >= 0.75;
   return true;
 }
 
@@ -206,6 +215,7 @@ export function BedroomWalkController() {
           if (o === "door") walkInput.openings?.setDoorOpen(true);
           if (o === "slider") walkInput.openings?.setSliderOpen(true);
           if (o === "mainDoor") walkInput.openings?.setMainDoorOpen(true);
+          if (o === "bathDoor") walkInput.openings?.setBathDoorOpen(true);
           prev = sp;
         }
       }

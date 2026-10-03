@@ -2,7 +2,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { HALL, PARTITION } from "./bedroomLayout";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { HALL } from "./bedroomLayout";
 import { getBedroomMaterials } from "./bedroomMaterials";
 import { mixValue, useEveningMix } from "./bedroomState";
 import { rectGlowTexture } from "./glow";
@@ -15,8 +16,6 @@ import { pillowGeometry, plantGeometry, vesselGeometry } from "./softGeometry";
 import { useMixedEmissive } from "./useMixedEmissive";
 
 // Everything that furnishes the living hall and the balcony deck.
-
-const WALL_FACE = PARTITION.z1;
 
 function hash(n: number) {
   const s = Math.sin(n * 91.345) * 43758.5453;
@@ -432,91 +431,139 @@ function AccentChair() {
   );
 }
 
-function DiningChair({ angle }: { angle: number }) {
+// ─── Dining ───────────────────────────────────────────────────────────────
+
+/** The dining zone, on the hall's west side between the console and the glass. */
+const DINING = { x: -2.25, z: 7.5, w: 1.06, len: 2.24, top: 0.78 };
+/** The table's two plinths, either side of the centre. */
+const PLINTH_Z = 0.66;
+
+/** A chair's barrel back is a cylinder wall centred on its -z side. */
+const BACK_ARC = 1.96;
+const BACK_START = Math.PI - BACK_ARC / 2;
+const UP = new THREE.Vector3(0, 1, 0);
+
+/**
+ * Seats round the table: the chair's centre and yaw (local +z faces the
+ * table), and where its place setting is laid on the top.
+ */
+const SEATS: { x: number; z: number; yaw: number; set: [number, number] }[] = [
+  { x: -0.8, z: -0.72, yaw: Math.PI / 2, set: [-0.34, -0.72] },
+  { x: -0.8, z: 0, yaw: Math.PI / 2, set: [-0.34, 0] },
+  { x: -0.8, z: 0.72, yaw: Math.PI / 2, set: [-0.34, 0.72] },
+  { x: 0.8, z: -0.72, yaw: -Math.PI / 2, set: [0.34, -0.72] },
+  { x: 0.8, z: 0, yaw: -Math.PI / 2, set: [0.34, 0] },
+  { x: 0.8, z: 0.72, yaw: -Math.PI / 2, set: [0.34, 0.72] },
+];
+
+const CHAIR_LEGS: [number, number][] = [
+  [-0.19, -0.17],
+  [0.19, -0.17],
+  [-0.2, 0.18],
+  [0.2, 0.18],
+];
+
+/** The tufting channels quilting the inside of a chair back, as one geometry. */
+function channelGeometry() {
+  const rods: THREE.BufferGeometry[] = [];
+  for (let i = -2; i <= 2; i++) {
+    const a = Math.PI + i * 0.3;
+    const rod = new THREE.CapsuleGeometry(0.026, 0.44, 3, 10);
+    rod.translate(Math.sin(a) * 0.243, 0, Math.cos(a) * 0.243);
+    rods.push(rod);
+  }
+  return mergeGeometries(rods)!;
+}
+
+/**
+ * Dining chair: an olive velvet barrel back, channel-tufted inside and
+ * capped with a walnut rail, over a cushion on tapered brass legs.
+ */
+function DiningChair({ seat, channels }: { seat: (typeof SEATS)[number]; channels: THREE.BufferGeometry }) {
   const m = getBedroomMaterials();
-  const r = 0.74;
   return (
-    <group position={[Math.sin(angle) * r, 0, Math.cos(angle) * r]} rotation={[0, angle + Math.PI, 0]}>
-      {(
-        [
-          [-0.18, -0.17],
-          [0.18, -0.17],
-          [-0.18, 0.17],
-          [0.18, 0.17],
-        ] as [number, number][]
-      ).map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.21, z]} rotation={[z * 0.3, 0, -x * 0.3]} material={m.walnut} castShadow>
-          <cylinderGeometry args={[0.016, 0.011, 0.42, 10]} />
+    <group position={[seat.x, 0, seat.z]} rotation={[0, seat.yaw, 0]}>
+      {CHAIR_LEGS.map(([x, z], i) => (
+        <mesh key={i} position={[x, 0.215, z]} rotation={[z * 0.24, 0, -x * 0.24]} material={m.brass} castShadow>
+          <cylinderGeometry args={[0.019, 0.011, 0.43, 12]} />
         </mesh>
       ))}
-      <RoundedBox args={[0.46, 0.07, 0.44]} radius={0.03} smoothness={3} position={[0, 0.46, 0]} material={m.boucle} castShadow receiveShadow />
-      {/* Curved back rest, on the far side from the table */}
-      <mesh position={[0, 0.74, -0.06]} material={m.boucle} castShadow receiveShadow>
-        <cylinderGeometry args={[0.28, 0.28, 0.3, 40, 1, true, Math.PI - 0.95, 1.9]} />
+      {/* Walnut seat frame under a velvet cushion */}
+      <RoundedBox args={[0.5, 0.05, 0.48]} radius={0.018} smoothness={3} position={[0, 0.43, 0]} material={m.walnut} castShadow receiveShadow />
+      <RoundedBox args={[0.475, 0.095, 0.455]} radius={0.035} smoothness={4} position={[0, 0.49, 0]} material={m.velvetOlive} castShadow receiveShadow />
+      {/* Barrel back: outer shell, lining, tufting, then the cap rail */}
+      <mesh position={[0, 0.745, 0.02]} material={m.velvetOlive} castShadow receiveShadow>
+        <cylinderGeometry args={[0.3, 0.3, 0.53, 48, 1, true, BACK_START, BACK_ARC]} />
       </mesh>
-      <mesh position={[0, 0.555, -0.24]} material={m.walnut}>
-        <boxGeometry args={[0.04, 0.12, 0.04]} />
+      <mesh position={[0, 0.745, 0.02]} material={m.velvetOlive}>
+        <cylinderGeometry args={[0.268, 0.268, 0.53, 48, 1, true, BACK_START, BACK_ARC]} />
+      </mesh>
+      <mesh geometry={channels} material={m.velvetOlive} position={[0, 0.752, 0.02]} />
+      <mesh position={[0, 0.995, 0.02]} material={m.walnut} castShadow>
+        <cylinderGeometry args={[0.309, 0.309, 0.034, 48, 1, true, BACK_START, BACK_ARC]} />
+      </mesh>
+      <mesh position={[0, 1.012, 0.02]} rotation={[-Math.PI / 2, 0, 0]} material={m.walnut}>
+        <ringGeometry args={[0.262, 0.309, 48, 1, BACK_START - Math.PI / 2, BACK_ARC]} />
       </mesh>
     </group>
   );
 }
 
-function PendantCluster({ x, z }: { x: number; z: number }) {
+/** Charger, napkin and glass at every seat — three instanced meshes in all. */
+function PlaceSettings() {
   const m = getBedroomMaterials();
-  const lamp = useLampSwitch();
-  const glass = useMemo(
+  const plates = useRef<THREE.InstancedMesh>(null);
+  const napkins = useRef<THREE.InstancedMesh>(null);
+  const glasses = useRef<THREE.InstancedMesh>(null);
+  const stemware = useMemo(
     () =>
-      new THREE.MeshPhysicalMaterial({
-        color: "#D9B892",
-        roughness: 0.05,
-        transparent: true,
-        opacity: 0.45,
-        emissive: "#FFB978",
-        depthWrite: false,
-      }),
+      vesselGeometry(
+        [
+          [0, 0],
+          [0.032, 0],
+          [0.032, 0.005],
+          [0.006, 0.022],
+          [0.006, 0.07],
+          [0.036, 0.1],
+          [0.043, 0.15],
+          [0.039, 0.16],
+          [0.032, 0.115],
+          [0.003, 0.08],
+          [0, 0.08],
+        ],
+        24
+      ),
     []
   );
-  const bulb = useMixedEmissive(() => new THREE.MeshStandardMaterial({ color: "#fff", emissive: "#FFD6A0" }), 0.3, 14, lamp.level);
-  useFrame(() => {
-    glass.emissiveIntensity = mixValue(0.02, 1.2, lamp.level.current);
-  });
-  const globes = [
-    { a: 0, d: 0.0, y: 1.72, r: 0.13 },
-    { a: 0.3, d: 0.28, y: 1.88, r: 0.1 },
-    { a: 1.9, d: 0.3, y: 1.62, r: 0.11 },
-    { a: 3.6, d: 0.27, y: 1.95, r: 0.09 },
-    { a: 5.0, d: 0.3, y: 1.78, r: 0.1 },
-  ];
+  useLayoutEffect(() => {
+    const dummy = new THREE.Object3D();
+    const offset = new THREE.Vector3();
+    SEATS.forEach((seat, i) => {
+      const [sx, sz] = seat.set;
+      dummy.rotation.set(0, seat.yaw, 0);
+      dummy.position.set(sx, 0.007, sz);
+      dummy.updateMatrix();
+      plates.current?.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(sx, 0.022, sz);
+      dummy.updateMatrix();
+      napkins.current?.setMatrixAt(i, dummy.matrix);
+      // Glass to one side of the charger, clear of it and of the runner.
+      offset.set(0.21, 0, 0.02).applyAxisAngle(UP, seat.yaw);
+      dummy.position.set(sx + offset.x, 0.002, sz + offset.z);
+      dummy.updateMatrix();
+      glasses.current?.setMatrixAt(i, dummy.matrix);
+    });
+    for (const ref of [plates, napkins, glasses]) if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+  }, []);
   return (
-    <group position={[x, 0, z]}>
-      <mesh position={[0, HALL.height - 0.012, 0]} material={m.brass}>
-        <cylinderGeometry args={[0.22, 0.22, 0.024, 48]} />
-      </mesh>
-      <group {...clickable(lamp.toggle)}>
-        {globes.map((g, i) => {
-          const gx = Math.cos(g.a) * g.d;
-          const gz = Math.sin(g.a) * g.d;
-          const len = HALL.height - g.y - g.r;
-          return (
-            <group key={i}>
-              <mesh position={[gx, g.y + g.r + len / 2, gz]} material={m.blackMetal}>
-                <cylinderGeometry args={[0.003, 0.003, len, 5]} />
-              </mesh>
-              <mesh position={[gx, g.y + g.r + 0.01, gz]} material={m.brass}>
-                <cylinderGeometry args={[0.02, 0.025, 0.03, 16]} />
-              </mesh>
-              <mesh position={[gx, g.y, gz]} material={glass}>
-                <sphereGeometry args={[g.r, 36, 24]} />
-              </mesh>
-              <mesh position={[gx, g.y, gz]} material={bulb}>
-                <sphereGeometry args={[0.022, 16, 10]} />
-              </mesh>
-            </group>
-          );
-        })}
-      </group>
-      <MixedPointLight position={[0, 1.7, 0]} day={0} evening={3.4} level={lamp.level} distance={6} decay={2} color="#FFC58A" alsoIn={[2]} />
-      <Hotspot position={[0, 1.42, 0]} label={lamp.isOn ? "Switch off dining lights" : "Switch on dining lights"} onActivate={lamp.toggle} />
+    <group>
+      <instancedMesh ref={plates} args={[undefined, undefined, SEATS.length]} material={m.ceramic} receiveShadow>
+        <cylinderGeometry args={[0.145, 0.132, 0.014, 40]} />
+      </instancedMesh>
+      <instancedMesh ref={napkins} args={[undefined, undefined, SEATS.length]} material={m.linenWhite}>
+        <boxGeometry args={[0.1, 0.016, 0.17]} />
+      </instancedMesh>
+      <instancedMesh ref={glasses} args={[undefined, undefined, SEATS.length]} geometry={stemware} material={m.stemware} />
     </group>
   );
 }
@@ -528,52 +575,201 @@ const FRUIT: [number, number, number, string][] = [
   [0.02, 0.13, 0.0, "#c24f2b"],
 ];
 
-function Dining() {
+/** What's laid on the table: runner, fruit bowl, tapers and six settings. */
+function TableTop() {
   const m = getBedroomMaterials();
-  const x = -2.4;
-  const z = 6.8;
-  const pedestal = useMemo(
-    () => vesselGeometry([[0, 0], [0.34, 0], [0.34, 0.03], [0.22, 0.08], [0.1, 0.3], [0.08, 0.5], [0.12, 0.68], [0.2, 0.72], [0, 0.72]], 64),
+  const bowl = useMemo(
+    () =>
+      vesselGeometry(
+        [
+          [0, 0],
+          [0.09, 0],
+          [0.18, 0.055],
+          [0.21, 0.11],
+          [0.2, 0.11],
+          [0.155, 0.055],
+          [0, 0.032],
+        ],
+        48
+      ),
     []
   );
-  const bowl = useMemo(() => vesselGeometry([[0, 0], [0.08, 0], [0.16, 0.05], [0.19, 0.1], [0.18, 0.1], [0.14, 0.05], [0, 0.03]], 48), []);
+  const stick = useMemo(
+    () =>
+      vesselGeometry(
+        [
+          [0, 0],
+          [0.045, 0],
+          [0.045, 0.012],
+          [0.014, 0.032],
+          [0.011, 0.155],
+          [0.031, 0.2],
+          [0.031, 0.215],
+          [0.016, 0.215],
+          [0.013, 0.2],
+          [0, 0.185],
+        ],
+        28
+      ),
+    []
+  );
+  return (
+    <group position={[0, DINING.top, 0]}>
+      <mesh position={[0, 0.002, 0]} receiveShadow>
+        <boxGeometry args={[0.36, 0.004, 1.5]} />
+        <meshPhysicalMaterial color="#d8cfbf" roughness={1} sheen={0.6} sheenColor="#efe7d8" />
+      </mesh>
+      <mesh geometry={bowl} position={[0, 0.005, 0]} material={m.ceramic} castShadow />
+      {FRUIT.map(([fx, fy, fz, c], i) => (
+        <mesh key={i} position={[fx, fy + 0.005, fz]} castShadow>
+          <sphereGeometry args={[0.045, 20, 14]} />
+          <meshStandardMaterial color={c} roughness={0.45} />
+        </mesh>
+      ))}
+      {[-0.62, -0.4, 0.4, 0.62].map((dz, i) => {
+        const len = 0.17 + (i % 2) * 0.05;
+        return (
+          <group key={dz} position={[i % 2 === 0 ? -0.055 : 0.055, 0.004, dz]}>
+            <mesh geometry={stick} material={m.brass} castShadow />
+            <mesh position={[0, 0.2 + len / 2, 0]} castShadow>
+              <cylinderGeometry args={[0.012, 0.013, len, 12]} />
+              <meshStandardMaterial color="#efe6d6" roughness={0.75} />
+            </mesh>
+          </group>
+        );
+      })}
+      <PlaceSettings />
+    </group>
+  );
+}
+
+/**
+ * The table: a book-matched Calacatta slab floating over a bronze reveal,
+ * carried on two fluted walnut plinths with polished brass shoes.
+ */
+function DiningTable() {
+  const m = getBedroomMaterials();
+  const flutes = useRef<THREE.InstancedMesh>(null);
+  const perFace = 9;
+  useLayoutEffect(() => {
+    const mesh = flutes.current;
+    if (!mesh) return;
+    const mat = new THREE.Matrix4();
+    let i = 0;
+    for (const pz of [-PLINTH_Z, PLINTH_Z]) {
+      for (const face of [-1, 1]) {
+        for (let k = 0; k < perFace; k++) {
+          mat.makeRotationY(face < 0 ? Math.PI : 0);
+          mat.setPosition((k / (perFace - 1) - 0.5) * 0.66, 0.337, pz + face * 0.078);
+          mesh.setMatrixAt(i++, mat);
+        }
+      }
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  }, []);
   return (
     <group>
-      <group position={[x, 0, z]}>
-        <mesh geometry={pedestal} material={m.walnut} castShadow receiveShadow />
-        <mesh position={[0, 0.74, 0]} material={m.walnut} castShadow receiveShadow>
-          <cylinderGeometry args={[0.66, 0.64, 0.045, 80]} />
-        </mesh>
-        {/* Linen runner, fruit bowl, a pair of candles */}
-        <mesh position={[0, 0.764, 0]} rotation={[0, 0.5, 0]} receiveShadow>
-          <boxGeometry args={[1.0, 0.003, 0.3]} />
-          <meshPhysicalMaterial color="#d8cfbf" roughness={1} sheen={0.6} />
-        </mesh>
-        <group position={[0, 0.765, 0]}>
-          <mesh geometry={bowl} material={m.ceramic} castShadow />
-          {FRUIT.map(([fx, fy, fz, c], i) => (
-            <mesh key={i} position={[fx, fy, fz]} castShadow>
-              <sphereGeometry args={[0.042, 20, 14]} />
-              <meshStandardMaterial color={c} roughness={0.45} />
-            </mesh>
-          ))}
-          {[-0.34, 0.34].map((dx) => (
-            <group key={dx} position={[dx * Math.cos(0.5), 0, -dx * Math.sin(0.5)]}>
-              <mesh position={[0, 0.02, 0]} material={m.brass}>
-                <cylinderGeometry args={[0.035, 0.04, 0.04, 20]} />
-              </mesh>
-              <mesh position={[0, 0.14, 0]} castShadow>
-                <cylinderGeometry args={[0.012, 0.012, 0.2, 12]} />
-                <meshStandardMaterial color="#efe6d6" roughness={0.7} />
-              </mesh>
-            </group>
-          ))}
+      {/* Slab, brass reveal, recessed bronze apron */}
+      <Box size={[DINING.w, 0.05, DINING.len]} position={[0, DINING.top - 0.025, 0]} material={m.calacattaTop} />
+      <Box size={[DINING.w - 0.02, 0.008, DINING.len - 0.02]} position={[0, DINING.top - 0.054, 0]} material={m.brass} cast={false} />
+      <Box size={[DINING.w - 0.12, 0.07, DINING.len - 0.12]} position={[0, DINING.top - 0.093, 0]} material={m.frameBronze} />
+      {/* Plinths on brass shoes, tied together by a walnut spine */}
+      {[-PLINTH_Z, PLINTH_Z].map((pz) => (
+        <group key={pz}>
+          <Box size={[0.8, 0.022, 0.21]} position={[0, 0.011, pz]} material={m.brass} />
+          <Box size={[0.74, 0.61, 0.16]} position={[0, 0.337, pz]} material={m.walnut} />
+          <Box size={[0.78, 0.024, 0.19]} position={[0, 0.654, pz]} material={m.brass} />
         </group>
-        {[0.25, 0.25 + Math.PI / 2, 0.25 + Math.PI, 0.25 + (3 * Math.PI) / 2].map((a) => (
-          <DiningChair key={a} angle={a} />
+      ))}
+      <instancedMesh ref={flutes} args={[undefined, undefined, perFace * 4]} material={m.walnut} castShadow receiveShadow>
+        <cylinderGeometry args={[0.019, 0.019, 0.61, 10, 1, false, -Math.PI / 2, Math.PI]} />
+      </instancedMesh>
+      <Box size={[0.15, 0.1, PLINTH_Z * 2 + 0.12]} position={[0, 0.59, 0]} material={m.walnut} />
+    </group>
+  );
+}
+
+/** Three alabaster shades on a brass bar over the table, switchable. */
+function DiningPendant({ x, z }: { x: number; z: number }) {
+  const m = getBedroomMaterials();
+  const lamp = useLampSwitch();
+  const shade = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: "#E6D6BB",
+        roughness: 0.3,
+        transparent: true,
+        opacity: 0.6,
+        emissive: "#FFB978",
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    []
+  );
+  const bulb = useMixedEmissive(() => new THREE.MeshStandardMaterial({ color: "#fff", emissive: "#FFD6A0" }), 0.3, 10, lamp.level);
+  useFrame(() => {
+    shade.emissiveIntensity = mixValue(0.03, 1.1, lamp.level.current);
+  });
+  const shadeY = 1.82;
+  const cap = shadeY + 0.15;
+  const drop = HALL.height - 0.04 - cap;
+  return (
+    <group position={[x, 0, z]}>
+      <Box size={[0.11, 0.04, 1.86]} position={[0, HALL.height - 0.02, 0]} material={m.brass} cast={false} />
+      <group {...clickable(lamp.toggle)}>
+        {[-0.72, 0, 0.72].map((dz) => (
+          <group key={dz} position={[0, 0, dz]}>
+            <mesh position={[0, cap + drop / 2, 0]} material={m.brass}>
+              <cylinderGeometry args={[0.005, 0.005, drop, 6]} />
+            </mesh>
+            <mesh position={[0, cap, 0]} material={m.brass} castShadow>
+              <cylinderGeometry args={[0.055, 0.035, 0.05, 28]} />
+            </mesh>
+            <mesh position={[0, shadeY, 0]} material={shade}>
+              <coneGeometry args={[0.17, 0.3, 40, 1, true]} />
+            </mesh>
+            <mesh position={[0, shadeY - 0.15, 0]} material={m.brass}>
+              <torusGeometry args={[0.169, 0.005, 8, 40]} />
+            </mesh>
+            <mesh position={[0, shadeY - 0.05, 0]} material={bulb}>
+              <sphereGeometry args={[0.032, 16, 10]} />
+            </mesh>
+          </group>
         ))}
       </group>
-      <PendantCluster x={x} z={z} />
+      <MixedPointLight position={[0, 1.6, 0]} day={0} evening={3.6} level={lamp.level} distance={6.5} decay={2} color="#FFC58A" alsoIn={[2]} />
+      <Hotspot position={[0, 1.42, 0]} label={lamp.isOn ? "Switch off dining lights" : "Switch on dining lights"} onActivate={lamp.toggle} />
+    </group>
+  );
+}
+
+function Dining() {
+  const channels = useMemo(channelGeometry, []);
+  const rug = getBedroomTextures().rug;
+  return (
+    <group>
+      {/* Wool rug sized so the chairs stay on it when they're pushed back */}
+      <mesh position={[DINING.x, 0.006, DINING.z]} receiveShadow>
+        <boxGeometry args={[2.7, 0.012, 3.0]} />
+        <meshPhysicalMaterial
+          color="#d9ccb6"
+          map={rug.map}
+          bumpMap={rug.bumpMap}
+          bumpScale={1.5}
+          roughness={1}
+          sheen={0.6}
+          sheenRoughness={0.9}
+          sheenColor="#efe4d2"
+        />
+      </mesh>
+      <group position={[DINING.x, 0, DINING.z]}>
+        <DiningTable />
+        <TableTop />
+        {SEATS.map((seat) => (
+          <DiningChair key={`${seat.x},${seat.z}`} seat={seat} channels={channels} />
+        ))}
+      </group>
+      <DiningPendant x={DINING.x} z={DINING.z} />
     </group>
   );
 }
@@ -581,7 +777,7 @@ function Dining() {
 // ─── Joinery ──────────────────────────────────────────────────────────────
 
 const BOOK_COLORS = ["#2F3A45", "#7B4B36", "#C9B79E", "#4F5B4A", "#A25B3C", "#1F2226", "#D8CCB6", "#6C6A73", "#8E7458", "#B2402F", "#E6DED0", "#39505A"];
-const SHELF = { xBack: HALL.x0, depth: 0.4, z0: 3.4, z1: 8.6, bays: 5, ys: [1.12, 1.54, 1.96, 2.38, 2.8] };
+const SHELF = { xBack: HALL.x0, depth: 0.4, z0: 5.4, z1: 8.2, bays: 3, ys: [1.12, 1.54, 1.96, 2.38, 2.8] };
 const BAY_W = (SHELF.z1 - SHELF.z0) / SHELF.bays;
 
 function buildBooks() {
@@ -714,6 +910,9 @@ function Bookshelf() {
   );
 }
 
+/** Where the console sits along the east wall (its centre, in world z). */
+const CONSOLE_Z = 3.75;
+
 /** Console table under a large artwork, with a switchable table lamp. */
 function EntryConsole() {
   const m = getBedroomMaterials();
@@ -726,13 +925,13 @@ function EntryConsole() {
     lamp.level
   );
   const base = useMemo(() => vesselGeometry([[0, 0], [0.07, 0], [0.11, 0.08], [0.11, 0.22], [0.06, 0.32], [0.02, 0.36], [0, 0.36]], 48), []);
-  const cx = -2.3;
-  const z = WALL_FACE + 0.22;
   const artW = 1.6;
   const artH = 1.04;
+  // On the east wall between the front door and the TV slab: local +x runs
+  // south along the wall, local +z away from it into the room.
   return (
-    <group>
-      <group position={[cx, 0, z]}>
+    <group position={[HALL.x1, 0, CONSOLE_Z]} rotation={[0, -Math.PI / 2, 0]}>
+      <group position={[0, 0, 0.22]}>
         {/* Brass frame legs */}
         {[-0.86, 0.86].flatMap((dx) =>
           [-0.16, 0.16].map((dz) => (
@@ -771,7 +970,7 @@ function EntryConsole() {
         </mesh>
       </group>
       {/* Framed artwork */}
-      <group position={[cx, 1.9, WALL_FACE + 0.03]}>
+      <group position={[0, 1.9, 0.03]}>
         <mesh position={[0, 0, 0.013]}>
           <planeGeometry args={[artW, artH]} />
           <meshStandardMaterial map={art} roughness={0.9} />
@@ -943,7 +1142,8 @@ export function HallFurniture() {
       <Bookshelf />
       <EntryConsole />
       <IndoorPlant position={[-4.15, 0, 9.45]} scale={1.45} seed={11} />
-      <IndoorPlant position={[5.0, 0, 9.45]} scale={1.3} seed={13} />
+      {/* Tucked into the dead space under the stair tower's upper flight */}
+      <IndoorPlant position={[6.3, 0, 12.0]} scale={1.3} seed={13} />
       <DeckFurniture />
     </group>
   );

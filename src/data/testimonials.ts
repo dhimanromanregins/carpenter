@@ -12,7 +12,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Ritika Malhotra",
     role: "Homeowner, Chandigarh",
     quote:
-      "Dhiman Interiors turned our vision into something far more refined than we imagined. Every joint, every finish — museum quality.",
+      "Kraftspace Interiors turned our vision into something far more refined than we imagined. Every joint, every finish — museum quality.",
     rating: 5,
   },
   {

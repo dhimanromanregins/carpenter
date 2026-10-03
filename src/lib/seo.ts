@@ -1,4 +1,4 @@
-export const SITE_NAME = "Dhiman Interiors";
+export const SITE_NAME = "Kraftspace Interiors";
 
 const RAW_SITE_URL = import.meta.env.VITE_SITE_URL as string | undefined;
 export const SITE_URL = (RAW_SITE_URL ?? "https://dhimaninteriors.in").replace(/\/+$/, "");

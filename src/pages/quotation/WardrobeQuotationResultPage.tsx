@@ -14,7 +14,7 @@ export function WardrobeQuotationResultPage() {
 
   useSeo({
     title: "Your Wardrobe Quotation",
-    description: "View and download your Dhiman Interiors wardrobe quotation.",
+    description: "View and download your Kraftspace Interiors wardrobe quotation.",
     path: `/quote/wardrobe/${quotationId ?? ""}`,
     noindex: true,
   });

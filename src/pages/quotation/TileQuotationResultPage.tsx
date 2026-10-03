@@ -16,7 +16,7 @@ export function TileQuotationResultPage() {
 
   useSeo({
     title: "Your Tiles & Flooring Quotation",
-    description: "View and download your Dhiman Interiors tiles & flooring quotation.",
+    description: "View and download your Kraftspace Interiors tiles & flooring quotation.",
     path: `/quote/tiles/${quotationId ?? ""}`,
     noindex: true,
   });

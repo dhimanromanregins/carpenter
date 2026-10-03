@@ -37,12 +37,12 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
     city: "Zirakpur",
     metaTitle: "Interior Designer in Zirakpur — Modular Kitchens & Custom Carpentry",
     metaDescription:
-      "Dhiman Interiors is a Zirakpur-based interior design and carpentry studio on Highland Marg. Modular kitchens, wardrobes, custom carpentry and TV panels, with local site visits and a real studio you can walk into.",
+      "Kraftspace Interiors is a Zirakpur-based interior design and carpentry studio at Uptown Insignia, Airport Road. Modular kitchens, wardrobes, custom carpentry and TV panels, with local site visits and a real studio you can walk into.",
     heroHeadline: "Interior Designer in Zirakpur",
     heroSubtext: "Modular kitchens, wardrobes and custom carpentry from a studio that's actually in Zirakpur — not a call centre routing you to someone two cities away.",
     heroImage: "/projects/navy-parallel-kitchen/front.png",
     intro: [
-      "Dhiman Interiors is based right here in Zirakpur — our studio sits on Highland Marg, off the Patiala highway. That matters more than it sounds: when you're renovating a kitchen or building out a new wardrobe, half the friction in a project comes from a design team that's twenty minutes late for a site visit, or unreachable when a hardware delivery doesn't match what was ordered. We're a short drive from most of Zirakpur — VIP Road, Patiala Road, Peer Muchalla, Dhakoli, Baltana — so site visits, material swatch checks and the inevitable mid-project question happen in person, not over three days of WhatsApp back-and-forth.",
+      "Kraftspace Interiors is based right here in Zirakpur — our studio sits at Uptown Insignia on Airport Road. That matters more than it sounds: when you're renovating a kitchen or building out a new wardrobe, half the friction in a project comes from a design team that's twenty minutes late for a site visit, or unreachable when a hardware delivery doesn't match what was ordered. We're a short drive from most of Zirakpur — VIP Road, Patiala Road, Peer Muchalla, Dhakoli, Baltana — so site visits, material swatch checks and the inevitable mid-project question happen in person, not over three days of WhatsApp back-and-forth.",
       "Most of our Zirakpur work is a mix of independent houses and builder floors along the newer residential stretches, plus a growing number of apartment complexes on VIP Road. Both come with more usable floor area than you'd get in an older Chandigarh Sector home, which changes how we design — there's more room to plan an island kitchen or a proper walk-in wardrobe instead of squeezing storage into leftover space.",
     ],
     services: [
@@ -77,7 +77,7 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
     whyChooseUs: [
       {
         title: "A studio you can actually visit",
-        description: "Highland Marg, off the Patiala highway — come see board and laminate samples in person before you commit to a finish.",
+        description: "SCO-16, Uptown Insignia, Airport Road — come see board and laminate samples in person before you commit to a finish.",
       },
       {
         title: "Fast site visits",
@@ -95,7 +95,7 @@ export const LOCAL_SEO_PAGES: LocalSeoPageContent[] = [
     faqs: [
       {
         question: "Do you have a showroom I can visit in Zirakpur?",
-        answer: "Yes — our studio is on Highland Marg, off the Patiala highway. You're welcome to come look at board, laminate and hardware samples before deciding on a finish.",
+        answer: "Yes — our studio is at SCO-16, Uptown Insignia, Airport Road. You're welcome to come look at board, laminate and hardware samples before deciding on a finish.",
       },
       {
         question: "Which areas around Zirakpur do you cover?",

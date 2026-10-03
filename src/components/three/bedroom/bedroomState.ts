@@ -31,7 +31,7 @@ export const HintsContext = createContext(true);
 export const windowState = { drapes: 0, sheers: 0, sash: 0 };
 
 /** Eased 0..1 openness of the bedroom door, the hall's sliding glass panel and the main door. */
-export const openingState = { door: 0, slider: 0, mainDoor: 0 };
+export const openingState = { door: 0, slider: 0, mainDoor: 0, bathDoor: 0, showerDoor: 0 };
 
 /**
  * The bedroom door and sliding glass panel are page-level state (tours
@@ -41,18 +41,22 @@ export interface OpeningsControl {
   doorOpen: boolean;
   sliderOpen: boolean;
   mainDoorOpen: boolean;
+  bathDoorOpen: boolean;
   setDoorOpen: (open: boolean) => void;
   setSliderOpen: (open: boolean) => void;
   setMainDoorOpen: (open: boolean) => void;
+  setBathDoorOpen: (open: boolean) => void;
 }
 
 export const OpeningsContext = createContext<OpeningsControl>({
   doorOpen: false,
   sliderOpen: false,
   mainDoorOpen: false,
+  bathDoorOpen: false,
   setDoorOpen: () => {},
   setSliderOpen: () => {},
   setMainDoorOpen: () => {},
+  setBathDoorOpen: () => {},
 });
 
 export function mixValue(day: number, evening: number, t: number) {

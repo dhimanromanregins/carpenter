@@ -18,7 +18,7 @@ GREY = colors.HexColor("#6B6B6B")
 CREAM = colors.HexColor("#F5F1E8")
 BORDER = colors.HexColor("#D9D2C2")
 
-PREPARED_BY = "Sahil Dhiman, Dhiman Interiors"
+PREPARED_BY = "Sahil Dhiman, Kraftspace Interiors"
 
 
 def _format_qty(value) -> str:
@@ -216,7 +216,7 @@ def build_tiles_pdf(quotation: Quotation) -> bytes:
     signature_table = Table(
         [
             ["Signature: ______________________", "Signature: ______________________"],
-            ["For Dhiman Interiors", f"{quotation.customer_name} (Client)"],
+            ["For Kraftspace Interiors", f"{quotation.customer_name} (Client)"],
             ["Date: ______________", "Date: ______________"],
         ],
         colWidths=[85 * mm, 85 * mm],

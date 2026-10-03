@@ -12,7 +12,7 @@ GREY = colors.HexColor("#6B6B6B")
 LOGO_PATH = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
 LOGO_ASPECT = 500 / 1000  # height / width of the source logo file
 
-COMPANY_ADDRESS = "Highland Marg, Highway, Patiala, Zirakpur, Punjab 140603"
+COMPANY_ADDRESS = "SCO-16, Second Floor, Uptown Insignia, Airport Road, Zirakpur, Punjab 140603"
 COMPANY_PHONE = "+91 9992268109"
 COMPANY_EMAIL = "contact@dhimaninteriors.in"
 
@@ -33,7 +33,7 @@ def _draw_footer(canvas, doc, quotation_number: str) -> None:
 
     canvas.setFont("Helvetica", 7.5)
     canvas.setFillColor(GREY)
-    canvas.drawString(20 * mm, 11.5 * mm, f"Dhiman Interiors  ·  {COMPANY_ADDRESS}")
+    canvas.drawString(20 * mm, 11.5 * mm, f"Kraftspace Interiors  ·  {COMPANY_ADDRESS}")
     canvas.drawString(20 * mm, 7.5 * mm, f"{COMPANY_PHONE}  ·  {COMPANY_EMAIL}")
     canvas.drawRightString(190 * mm, 11.5 * mm, quotation_number)
     canvas.drawRightString(190 * mm, 7.5 * mm, f"Page {canvas.getPageNumber()}")

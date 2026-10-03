@@ -4,11 +4,17 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { VirgoLaminateGallery } from "./VirgoLaminateGallery";
+import { BoardCatalog } from "./BoardCatalog";
+import type { BoardBrand } from "@/data/boardCatalog";
+import { CATALOGS, type CatalogConfig } from "@/data/catalogRegistry";
 import { MATERIALS } from "@/data/materials";
 import { cn } from "@/lib/utils";
 
 export function Materials() {
   const [showLaminates, setShowLaminates] = useState(false);
+  const [boardBrand, setBoardBrand] = useState<BoardBrand | null>(null);
+  const [catalogKey, setCatalogKey] = useState<string>("boards");
+  const catalog: CatalogConfig | undefined = CATALOGS[catalogKey];
 
   return (
     <section id="materials" className="relative bg-charcoal py-28 md:py-40">
@@ -31,13 +37,32 @@ export function Materials() {
                 <div className="mt-auto flex flex-wrap gap-2 pt-4">
                   {category.brands.map((brand) => {
                     const isVirgoLaminate = category.id === "laminates" && brand.name === "Virgo";
+                    const boardEntry = CATALOGS[category.id]?.brands[brand.name];
                     const pillClass = cn(
                       "flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs uppercase tracking-widest transition-colors duration-300",
                       brand.tier === "Luxury"
                         ? "border-gold/50 bg-gold/10 text-gold"
                         : "border-cream/20 text-grey",
-                      isVirgoLaminate && "cursor-pointer hover:border-gold hover:text-gold"
+                      (isVirgoLaminate || boardEntry) && "cursor-pointer hover:border-gold hover:text-gold"
                     );
+
+                    if (boardEntry) {
+                      return (
+                        <button
+                          key={brand.name}
+                          type="button"
+                          onClick={() => {
+                            setCatalogKey(category.id);
+                            setBoardBrand(boardEntry);
+                          }}
+                          data-cursor="Catalogue"
+                          className={pillClass}
+                        >
+                          {brand.name}
+                          <span className="text-[9px] tracking-normal text-grey/70">View catalogue</span>
+                        </button>
+                      );
+                    }
 
                     if (isVirgoLaminate) {
                       return (
@@ -70,6 +95,20 @@ export function Materials() {
             </RevealOnScroll>
           ))}
         </div>
+
+        <AnimatePresence>
+          {boardBrand && catalog && (
+            <BoardCatalog
+              key={`${catalogKey}-${boardBrand.id}`}
+              brand={boardBrand}
+              onClose={() => setBoardBrand(null)}
+              types={catalog.types}
+              ratingRows={catalog.ratingRows}
+              noun={catalog.noun}
+              sizeLabel={catalog.sizeLabel}
+            />
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {showLaminates && (

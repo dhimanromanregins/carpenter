@@ -14,7 +14,7 @@ export function CeilingQuotationResultPage() {
 
   useSeo({
     title: "Your Ceiling Quotation",
-    description: "View and download your Dhiman Interiors false ceiling quotation.",
+    description: "View and download your Kraftspace Interiors false ceiling quotation.",
     path: `/quote/ceiling/${quotationId ?? ""}`,
     noindex: true,
   });
